@@ -6,24 +6,35 @@ const INITIAL_LIFE = 40;
 // Card Pool - ~20 varied creatures
 const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters'>[] = [
     { name: "Serra Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, Vigilance", power: "4", toughness: "4", colors: ["W"], keywords: ["Flying", "Vigilance"], imageUrl: "https://api.scryfall.com/cards/named?exact=Serra+Angel&format=image&version=normal" },
-    { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying, {R}: +1/+0", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
+    { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
     { name: "Elite Vanguard", manaCost: "{W}", typeLine: "Creature — Human Soldier", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Elite+Vanguard&format=image&version=normal" },
     { name: "Goblin Piker", manaCost: "{1}{R}", typeLine: "Creature — Goblin", oracleText: "", power: "2", toughness: "1", colors: ["R"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Goblin+Piker&format=image&version=normal" },
     { name: "Garruk's Companion", manaCost: "{G}{G}", typeLine: "Creature — Beast", oracleText: "Trample", power: "3", toughness: "2", colors: ["G"], keywords: ["Trample"], imageUrl: "https://api.scryfall.com/cards/named?exact=Garruk%27s+Companion&format=image&version=normal" },
     { name: "Vampire Nighthawk", manaCost: "{1}{B}{B}", typeLine: "Creature — Vampire Shaman", oracleText: "Flying, Deathtouch, Lifelink", power: "2", toughness: "3", colors: ["B"], keywords: ["Flying", "Deathtouch", "Lifelink"], imageUrl: "https://api.scryfall.com/cards/named?exact=Vampire+Nighthawk&format=image&version=normal" },
     { name: "Giant Spider", manaCost: "{3}{G}", typeLine: "Creature — Spider", oracleText: "Reach", power: "2", toughness: "4", colors: ["G"], keywords: ["Reach"], imageUrl: "https://api.scryfall.com/cards/named?exact=Giant+Spider&format=image&version=normal" },
-    { name: "Llanowar Elves", manaCost: "{G}", typeLine: "Creature — Elf Druid", oracleText: "{T}: Add {G}.", power: "1", toughness: "1", colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Llanowar+Elves&format=image&version=normal" },
+    { name: "Llanowar Elves", manaCost: "{G}", typeLine: "Creature — Elf Druid", oracleText: "", power: "1", toughness: "1", colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Llanowar+Elves&format=image&version=normal" },
     { name: "Air Elemental", manaCost: "{3}{U}{U}", typeLine: "Creature — Elemental", oracleText: "Flying", power: "4", toughness: "4", colors: ["U"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Air+Elemental&format=image&version=normal" },
-    { name: "Hypnotic Specter", manaCost: "{1}{B}{B}", typeLine: "Creature — Specter", oracleText: "Flying. Whenever Hypnotic Specter deals damage to an opponent, that player discards a card at random.", power: "2", toughness: "2", colors: ["B"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Hypnotic+Specter&format=image&version=normal" },
+    { name: "Hypnotic Specter", manaCost: "{1}{B}{B}", typeLine: "Creature — Specter", oracleText: "Flying", power: "2", toughness: "2", colors: ["B"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Hypnotic+Specter&format=image&version=normal" },
     { name: "Craw Wurm", manaCost: "{4}{G}{G}", typeLine: "Creature — Wurm", oracleText: "", power: "6", toughness: "4", colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Craw+Wurm&format=image&version=normal" },
     { name: "Savannah Lions", manaCost: "{W}", typeLine: "Creature — Cat", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Savannah+Lions&format=image&version=normal" },
-    { name: "Giant Growth", manaCost: "{G}", typeLine: "Instant", oracleText: "Target creature gets +3/+3 until end of turn.", power: undefined, toughness: undefined, colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Giant+Growth&format=image&version=normal" },
     { name: "Woolly Thoctar", manaCost: "{R}{G}{W}", typeLine: "Creature — Beast", oracleText: "", power: "5", toughness: "4", colors: ["R", "G", "W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Woolly+Thoctar&format=image&version=normal" },
     { name: "Storm Crow", manaCost: "{1}{U}", typeLine: "Creature — Bird", oracleText: "Flying", power: "1", toughness: "2", colors: ["U"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Storm+Crow&format=image&version=normal" },
-    { name: "Doom Blade", manaCost: "{1}{B}", typeLine: "Instant", oracleText: "Destroy target nonblack creature.", power: undefined, toughness: undefined, colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Doom+Blade&format=image&version=normal" },
-    { name: "Dark Confidant", manaCost: "{1}{B}", typeLine: "Creature — Human Wizard", oracleText: "At the beginning of your upkeep, reveal the top card of your library and put that card into your hand. You lose life equal to its mana value.", power: "2", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Dark+Confidant&format=image&version=normal" },
-    { name: "Baneslayer Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, First Strike, Lifelink, Protection from Demons and Dragons", power: "5", toughness: "5", colors: ["W"], keywords: ["Flying", "First Strike", "Lifelink"], imageUrl: "https://api.scryfall.com/cards/named?exact=Baneslayer+Angel&format=image&version=normal" },
-    { name: "Stoneforge Mystic", manaCost: "{1}{W}", typeLine: "Creature — Kor Artificer", oracleText: "Search for Equipment.", power: "1", toughness: "2", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Stoneforge+Mystic&format=image&version=normal" }
+    { name: "Dark Confidant", manaCost: "{1}{B}", typeLine: "Creature — Human Wizard", oracleText: "", power: "2", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Dark+Confidant&format=image&version=normal" },
+    { name: "Baneslayer Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, First Strike, Lifelink", power: "5", toughness: "5", colors: ["W"], keywords: ["Flying", "First Strike", "Lifelink"], imageUrl: "https://api.scryfall.com/cards/named?exact=Baneslayer+Angel&format=image&version=normal" },
+    { name: "Stoneforge Mystic", manaCost: "{1}{W}", typeLine: "Creature — Kor Artificer", oracleText: "", power: "1", toughness: "2", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Stoneforge+Mystic&format=image&version=normal" },
+    { name: "Gravecrawler", manaCost: "{B}", typeLine: "Creature — Zombie", oracleText: "", power: "2", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Gravecrawler&format=image&version=normal" },
+    { name: "Diregraf Ghoul", manaCost: "{B}", typeLine: "Creature — Zombie", oracleText: "", power: "2", toughness: "2", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Diregraf+Ghoul&format=image&version=normal" },
+    { name: "Gray Merchant of Asphodel", manaCost: "{3}{B}{B}", typeLine: "Creature — Zombie Cleric", oracleText: "", power: "2", toughness: "4", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Gray+Merchant+of+Asphodel&format=image&version=normal" },
+    { name: "Liliana's Reaver", manaCost: "{2}{B}{B}", typeLine: "Creature — Zombie", oracleText: "Deathtouch", power: "4", toughness: "3", colors: ["B"], keywords: ["Deathtouch"], imageUrl: "https://api.scryfall.com/cards/named?exact=Liliana%27s+Reaver&format=image&version=normal" },
+    { name: "Soul Warden", manaCost: "{W}", typeLine: "Creature — Human Cleric", oracleText: "", power: "1", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Soul+Warden&format=image&version=normal" },
+    { name: "Grand Abolisher", manaCost: "{W}{W}", typeLine: "Creature — Human Cleric", oracleText: "", power: "2", toughness: "2", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Grand+Abolisher&format=image&version=normal" },
+    { name: "Thalia, Guardian of Thraben", manaCost: "{1}{W}", typeLine: "Legendary Creature — Human Soldier", oracleText: "First Strike", power: "2", toughness: "1", colors: ["W"], keywords: ["First Strike"], imageUrl: "https://api.scryfall.com/cards/named?exact=Thalia%2C+Guardian+of+Thraben&format=image&version=normal" },
+    { name: "Liliana of the Veil", manaCost: "{1}{B}{B}", typeLine: "Legendary Creature — Human Wizard", oracleText: "", power: "2", toughness: "3", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Liliana+of+the+Veil&format=image&version=normal" },
+    { name: "Olivia Voldaren", manaCost: "{2}{B}{R}", typeLine: "Legendary Creature — Vampire", oracleText: "Flying", power: "3", toughness: "3", colors: ["B", "R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Olivia+Voldaren&format=image&version=normal" },
+    { name: "Aurelia, the Warleader", manaCost: "{2}{R}{R}{W}{W}", typeLine: "Legendary Creature — Angel", oracleText: "Flying, Vigilance, Haste", power: "3", toughness: "4", colors: ["R", "W"], keywords: ["Flying", "Vigilance", "Haste"], imageUrl: "https://api.scryfall.com/cards/named?exact=Aurelia%2C+the+Warleader&format=image&version=normal" },
+    { name: "Liliana's Standard Bearer", manaCost: "{2}{B}", typeLine: "Creature — Zombie Knight", oracleText: "", power: "3", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Liliana%27s+Standard+Bearer&format=image&version=normal" },
+    { name: "Steel Overseer", manaCost: "{2}", typeLine: "Artifact Creature — Construct", oracleText: "", power: "1", toughness: "1", colors: [], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Steel+Overseer&format=image&version=normal" },
+    { name: "Solemn Simulacrum", manaCost: "{4}", typeLine: "Artifact Creature — Golem", oracleText: "", power: "2", toughness: "2", colors: [], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Solemn+Simulacrum&format=image&version=normal" }
 ].filter(c => c.typeLine.includes("Creature"));
 
 
@@ -76,10 +87,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     lastCombatSummary: null,
     showSummary: false,
     log: ["Welcome to the Battle Simulator!", "Click 'New Battle' to start."],
-    quizMode: true, // Default to true for training
+    quizMode: true, // Always on
     showQuiz: false,
     pendingOutcome: null,
-    autoBattle: false,
+    autoBattle: true, // Always on
     autoBattleTimeout: null,
     showTurnBanner: null,
     winner: null,
@@ -815,15 +826,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
             // CHECK FOR VICTORY
             const p1Wiped = finalPlayers[0].battlefield.length === 0;
             const p2Wiped = finalPlayers[1].battlefield.length === 0;
+            const p1Dead = finalPlayers[0].life <= 0;
+            const p2Dead = finalPlayers[1].life <= 0;
 
-            if (p1Wiped || p2Wiped) {
-                const winnerId = p1Wiped ? 'player2' : 'player1';
+            if (p1Wiped || p2Wiped || p1Dead || p2Dead) {
+                const winnerId = (p1Wiped || p1Dead) ? 'player2' : 'player1';
                 setTimeout(() => {
                     set({
                         winner: winnerId,
                         autoBattle: false
                     });
-                    addLog(`💀 ${p1Wiped ? finalPlayers[0].name : finalPlayers[1].name}'s army has been destroyed!`);
+                    if (p1Wiped || p2Wiped) {
+                        addLog(`💀 ${p1Wiped ? finalPlayers[0].name : finalPlayers[1].name}'s army has been destroyed!`);
+                    }
+                    if (p1Dead || p2Dead) {
+                        addLog(`💀 ${p1Dead ? finalPlayers[0].name : finalPlayers[1].name} has been defeated (Life: ${p1Dead ? finalPlayers[0].life : finalPlayers[1].life})!`);
+                    }
                     addLog(`--- BATTLE CONCLUDED: ${winnerId === 'player1' ? 'VICTORY' : 'DEFEAT'} ---`);
                 }, 1000); // Small delay to let deaths animate
             }
@@ -857,12 +875,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
         else if (phase === 'main1') {
             nextPhase = 'combat';
             nextCombatStep = 'begin';
-            set({ combatStats: { damageDealt: 0, damageBlocked: 0, creaturesLost: 0 } });
+            set({ combatStats: { damageDealt: 0, damageBlocked: 0, creaturesLost: 0 }, selectedCardId: null });
             addLog(`Phase: Combat (Beginning)`);
         }
         else if (phase === 'combat') {
             if (combatStep === 'begin') {
                 nextCombatStep = 'declareAttackers';
+                set({ selectedCardId: null });
                 addLog(`Step: Declare Attackers`);
             }
             else if (combatStep === 'declareAttackers') {
@@ -933,7 +952,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 nextCombatStep = 'combatDamage';
                 addLog(`Step: Combat Damage`);
                 // Force state update immediately so resolveCombat sees the new combatStep
-                set({ combatStep: 'combatDamage' });
+                set({ combatStep: 'combatDamage', selectedCardId: null });
                 get().resolveCombat();
             }
             else if (combatStep === 'combatDamage') {
@@ -1174,52 +1193,80 @@ export const useGameStore = create<GameStore>((set, get) => ({
         }
 
         set(state => {
-            const newPlayers = state.players.map(p => {
-                if (p.id !== 'player1') return p;
-
-                const newBattlefield = [...p.battlefield];
+            let updatedPlayers = [...state.players];
+            
+            if (upgrade === 'spawn_creature') {
+                // Spawn a random creature for player1
+                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                const newCreature = {
+                    ...randomCard,
+                    id: `player1-creature-${Date.now()}-${Math.random()}`,
+                    controllerId: 'player1',
+                    ownerId: 'player1',
+                    tapped: false,
+                    damageTaken: 0,
+                    plusOneCounters: 0
+                };
                 
-                if (upgrade === 'plus_counter' || upgrade === 'minus_counter') {
-                    const targetPlayer = upgrade === 'plus_counter' ? 'player1' : 'player2';
-                    const targetCreatures = state.players.find(pl => pl.id === targetPlayer)?.battlefield || [];
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player1') return p;
+                    return {
+                        ...p,
+                        battlefield: [...p.battlefield, newCreature]
+                    };
+                });
+                
+                addLog(`✨ Summoned ${newCreature.name} to your battlefield!`);
+            } else if (upgrade === 'plus_counter' || upgrade === 'minus_counter') {
+                const targetPlayer = upgrade === 'plus_counter' ? 'player1' : 'player2';
+                const targetCreatures = state.players.find(pl => pl.id === targetPlayer)?.battlefield || [];
+                
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== targetPlayer) return pl;
+                        return {
+                            ...pl,
+                            battlefield: pl.battlefield.map(c =>
+                                c.id === randomCreature.id
+                                    ? { ...c, plusOneCounters: Math.max(0, c.plusOneCounters + (upgrade === 'plus_counter' ? 1 : -1)) }
+                                    : c
+                            )
+                        };
+                    });
                     
-                    if (targetCreatures.length > 0) {
-                        const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
-                        const updatedPlayers = state.players.map(pl => {
-                            if (pl.id !== targetPlayer) return pl;
-                            return {
-                                ...pl,
-                                battlefield: pl.battlefield.map(c =>
-                                    c.id === randomCreature.id
-                                        ? { ...c, plusOneCounters: Math.max(0, c.plusOneCounters + (upgrade === 'plus_counter' ? 1 : -1)) }
-                                        : c
-                                )
-                            };
-                        });
-                        
-                        addLog(`${upgrade === 'plus_counter' ? '🪙 +1/+1' : '💀 -1/-1'} counter applied to ${randomCreature.name}!`);
-                        return updatedPlayers.find(pl => pl.id === 'player1')!;
-                    }
-                } else {
-                    const availableCreatures = newBattlefield.filter(c => !c.keywords.includes(upgrade));
+                    addLog(`${upgrade === 'plus_counter' ? '🪙 +1/+1' : '💀 -1/-1'} counter applied to ${randomCreature.name}!`);
+                }
+            } else {
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player1') return p;
+                    
+                    const availableCreatures = p.battlefield.filter(c => !c.keywords.includes(upgrade));
                     if (availableCreatures.length > 0) {
                         const randomCreature = availableCreatures[Math.floor(Math.random() * availableCreatures.length)];
-                        const creatureIndex = newBattlefield.findIndex(c => c.id === randomCreature.id);
+                        const newBattlefield = p.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return {
+                                    ...c,
+                                    keywords: [...c.keywords, upgrade]
+                                };
+                            }
+                            return c;
+                        });
                         
-                        if (creatureIndex !== -1) {
-                            newBattlefield[creatureIndex] = {
-                                ...newBattlefield[creatureIndex],
-                                keywords: [...newBattlefield[creatureIndex].keywords, upgrade]
-                            };
-                            addLog(`✨ ${randomCreature.name} gains ${upgrade}!`);
-                        }
+                        addLog(`✨ ${randomCreature.name} gains ${upgrade}!`);
+                        return { ...p, battlefield: newBattlefield };
                     }
-                }
+                    return p;
+                });
+            }
 
-                return { ...p, gold: p.gold - cost, battlefield: newBattlefield };
-            });
+            // Deduct gold from player1
+            const finalPlayers = updatedPlayers.map(p => 
+                p.id === 'player1' ? { ...p, gold: p.gold - cost } : p
+            );
 
-            return { players: newPlayers };
+            return { players: finalPlayers };
         });
     }
 }));

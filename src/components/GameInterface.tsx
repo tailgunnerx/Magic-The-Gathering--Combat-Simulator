@@ -8,7 +8,8 @@ import { CombatSummaryModal } from './CombatSummaryModal';
 import { TurnBanner } from './TurnBanner';
 import { VictoryModal } from './VictoryModal';
 import { TreasureShop } from './TreasureShop';
-import { Shuffle, GraduationCap, Swords } from 'lucide-react';
+import { Shuffle } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const GameInterface = () => {
     const {
@@ -17,10 +18,6 @@ export const GameInterface = () => {
         phase,
         combatStep,
         shuffleBoard,
-        quizMode,
-        toggleQuizMode,
-        autoBattle,
-        toggleAutoBattle,
         toggleShop
     } = useGameStore();
 
@@ -38,34 +35,6 @@ export const GameInterface = () => {
                         className="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md"
                     >
                         <Shuffle size={18} /> New Battle
-                    </button>
-
-                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
-
-                    <button
-                        onClick={toggleQuizMode}
-                        className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md border ${quizMode
-                            ? "bg-blue-600 border-blue-400 text-white"
-                            : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
-                            }`}
-                        title={quizMode ? "Training Mode: ON" : "Training Mode: OFF"}
-                    >
-                        <GraduationCap size={18} />
-                        {quizMode ? "Quiz Mode: ON" : "Quiz Mode: OFF"}
-                    </button>
-
-                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
-
-                    <button
-                        onClick={toggleAutoBattle}
-                        className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md border ${autoBattle
-                            ? "bg-red-600 border-red-400 text-white animate-pulse"
-                            : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
-                            }`}
-                        title={autoBattle ? "AI ADVERSARY: LIVE" : "AI ADVERSARY: OFF"}
-                    >
-                        <Swords size={18} />
-                        {autoBattle ? "AI ADVERSARY: ON" : "DUEL THE AI"}
                     </button>
 
                     <div className="h-8 w-px bg-slate-700 mx-2"></div>
@@ -145,19 +114,43 @@ export const GameInterface = () => {
 
                             {/* Treasure Chest Button */}
                             <div className="absolute bottom-4 right-4 z-20">
-                                <button
+                                <motion.button
                                     onClick={toggleShop}
-                                    className="group relative bg-gradient-to-br from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white font-black px-6 py-4 rounded-2xl shadow-2xl transition-all active:scale-95 border-4 border-amber-400 hover:border-amber-300"
+                                    animate={{
+                                        boxShadow: [
+                                            '0 0 20px rgba(217, 119, 6, 0.5)',
+                                            '0 0 40px rgba(217, 119, 6, 0.8)',
+                                            '0 0 20px rgba(217, 119, 6, 0.5)'
+                                        ]
+                                    }}
+                                    transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        repeatType: 'loop'
+                                    }}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="group relative bg-gradient-to-br from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white font-black px-6 py-4 rounded-2xl shadow-2xl transition-all border-4 border-amber-400 hover:border-amber-300"
                                 >
                                     <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/gold-scale.png')] opacity-30 rounded-xl"></div>
                                     <div className="relative flex items-center gap-2">
                                         <span className="text-3xl">💎</span>
                                         <span className="text-xl uppercase tracking-tight">Shop</span>
                                     </div>
-                                    <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.1, 1]
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            repeatType: 'loop'
+                                        }}
+                                        className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full"
+                                    >
                                         NEW
-                                    </div>
-                                </button>
+                                    </motion.div>
+                                </motion.button>
                             </div>
                         </div>
                     </div>

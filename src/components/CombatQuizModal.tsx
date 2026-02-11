@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useGameStore } from '../store/gameStore';
 import type { Card } from '../types';
 import { motion } from 'framer-motion';
-import { Sword, CheckCircle, XCircle, ChevronRight, Info, RotateCcw } from 'lucide-react';
+import { Sword, CheckCircle, XCircle, ChevronRight, Info, RotateCcw, Coins } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const KEYWORD_COLORS: Record<string, string> = {
@@ -33,6 +33,19 @@ export const CombatQuizModal = () => {
     const [predictions, setPredictions] = useState<Record<string, 'Survives' | 'Dies'>>({});
     const [trampleGuesses, setTrampleGuesses] = useState<Record<string, number>>({});
     const [isSubmitted, setIsSubmitted] = useState(false);
+
+    const goldEarned = useMemo(() => {
+        if (!isSubmitted || !pendingOutcome) return 0;
+        let correctCount = 0;
+        Object.entries(predictions).forEach(([cardId, prediction]) => {
+            const isDead = pendingOutcome.deaths.includes(cardId);
+            const actualOutcome = isDead ? 'Dies' : 'Survives';
+            if (prediction === actualOutcome) {
+                correctCount++;
+            }
+        });
+        return correctCount * 10;
+    }, [isSubmitted, pendingOutcome, predictions]);
 
     if (!showQuiz || !pendingOutcome) return null;
 
@@ -93,8 +106,19 @@ export const CombatQuizModal = () => {
                         <p className="text-slate-400 text-sm">Predict the outcomes of this combat damage step.</p>
                     </div>
                     {isSubmitted && (
-                        <div className="px-4 py-2 bg-blue-600 rounded-lg text-white font-bold flex items-center gap-2">
-                            <Info size={18} /> Reviewing Results
+                        <div className="flex items-center gap-3">
+                            <div className="px-4 py-2 bg-blue-600 rounded-lg text-white font-bold flex items-center gap-2">
+                                <Info size={18} /> Reviewing Results
+                            </div>
+                            {goldEarned > 0 && (
+                                <motion.div
+                                    initial={{ scale: 0 }}
+                                    animate={{ scale: 1 }}
+                                    className="px-4 py-2 bg-yellow-600 rounded-lg text-white font-bold flex items-center gap-2 shadow-lg shadow-yellow-900/50"
+                                >
+                                    <Coins size={18} fill="currentColor" /> +{goldEarned} Gold!
+                                </motion.div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -110,8 +134,13 @@ export const CombatQuizModal = () => {
                                         <div className="w-12 h-12 bg-slate-700 rounded-lg overflow-hidden border border-slate-600">
                                             <img src={pair.attacker.imageUrl} alt="" className="w-full h-full object-cover" />
                                         </div>
+                                        {(pair.attacker.plusOneCounters || 0) > 0 && (
+                                            <div className="absolute -top-1 -left-1 bg-emerald-600 text-[8px] font-bold px-1 rounded text-white border border-white/20">
+                                                +{pair.attacker.plusOneCounters}/+{pair.attacker.plusOneCounters}
+                                            </div>
+                                        )}
                                         <div className="absolute -bottom-1 -right-1 bg-red-600 text-[10px] font-bold px-1 rounded text-white border border-white/20">
-                                            {pair.attacker.power}/{pair.attacker.toughness}
+                                            {parseInt(pair.attacker.power || '0') + (pair.attacker.plusOneCounters || 0)}/{parseInt(pair.attacker.toughness || '0') + (pair.attacker.plusOneCounters || 0)}
                                         </div>
                                     </div>
                                     <div>
@@ -153,8 +182,13 @@ export const CombatQuizModal = () => {
                                                     <div className="w-10 h-10 bg-slate-700 rounded-lg overflow-hidden border border-slate-600">
                                                         <img src={blocker.imageUrl} alt="" className="w-full h-full object-cover" />
                                                     </div>
+                                                    {(blocker.plusOneCounters || 0) > 0 && (
+                                                        <div className="absolute -top-1 -left-1 bg-emerald-600 text-[8px] font-bold px-1 rounded text-white border border-white/20">
+                                                            +{blocker.plusOneCounters}/+{blocker.plusOneCounters}
+                                                        </div>
+                                                    )}
                                                     <div className="absolute -bottom-1 -right-1 bg-blue-600 text-[10px] font-bold px-1 rounded text-white border border-white/20">
-                                                        {blocker.power}/{blocker.toughness}
+                                                        {parseInt(blocker.power || '0') + (blocker.plusOneCounters || 0)}/{parseInt(blocker.toughness || '0') + (blocker.plusOneCounters || 0)}
                                                     </div>
                                                 </div>
                                                 <div>

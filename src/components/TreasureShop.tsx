@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet } from 'lucide-react';
+import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet, Heart, Eye, Plus } from 'lucide-react';
 
 interface ShopItem {
     id: string;
@@ -16,7 +16,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'plus_counter',
         name: '+1/+1 Counter',
         description: 'Grant a random creature you control +1/+1',
-        cost: 20,
+        cost: 30,
         icon: <Sparkles className="text-emerald-400" />,
         category: 'small'
     },
@@ -24,8 +24,16 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'minus_counter',
         name: '-1/-1 Counter',
         description: 'Give a random opponent creature -1/-1',
-        cost: 25,
+        cost: 50,
         icon: <Skull className="text-purple-400" />,
+        category: 'small'
+    },
+    {
+        id: 'spawn_creature',
+        name: 'Summon Creature',
+        description: 'Summon a random creature to your battlefield',
+        cost: 100,
+        icon: <Plus className="text-cyan-400" />,
         category: 'small'
     },
     {
@@ -58,6 +66,22 @@ const SHOP_ITEMS: ShopItem[] = [
         description: 'Grant First Strike to a random creature you control',
         cost: 85,
         icon: <Zap className="text-amber-400" />,
+        category: 'big'
+    },
+    {
+        id: 'Lifelink',
+        name: 'Lifelink',
+        description: 'Grant Lifelink to a random creature you control',
+        cost: 75,
+        icon: <Heart className="text-pink-500" />,
+        category: 'big'
+    },
+    {
+        id: 'Vigilance',
+        name: 'Vigilance',
+        description: 'Grant Vigilance to a random creature you control',
+        cost: 65,
+        icon: <Eye className="text-slate-300" />,
         category: 'big'
     }
 ];
@@ -189,8 +213,10 @@ const ShopItemCard = ({ item, playerGold, onPurchase }: { item: ShopItem, player
             </div>
 
             {!canAfford && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-xl">
-                    <span className="text-red-400 font-bold text-xs">Not Enough Gold</span>
+                <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-red-950/60 backdrop-blur-sm flex items-center justify-center rounded-xl border-2 border-red-900/50">
+                    <div className="bg-red-900/80 px-3 py-2 rounded-lg border border-red-500/50 shadow-lg">
+                        <span className="text-red-200 font-bold text-xs uppercase tracking-wide">🔒 Not Enough Gold</span>
+                    </div>
                 </div>
             )}
         </motion.button>
