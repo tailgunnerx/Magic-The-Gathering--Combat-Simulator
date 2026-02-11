@@ -4,7 +4,7 @@ import type { GameState, Player, Phase, CombatPhaseStep, Card, CombatOutcome, Da
 const INITIAL_LIFE = 40;
 
 // Card Pool - ~20 varied creatures
-const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken'>[] = [
+const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters'>[] = [
     { name: "Serra Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, Vigilance", power: "4", toughness: "4", colors: ["W"], keywords: ["Flying", "Vigilance"], imageUrl: "https://api.scryfall.com/cards/named?exact=Serra+Angel&format=image&version=normal" },
     { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying, {R}: +1/+0", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
     { name: "Elite Vanguard", manaCost: "{W}", typeLine: "Creature — Human Soldier", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Elite+Vanguard&format=image&version=normal" },
@@ -109,7 +109,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     closeSummary: () => set({ showSummary: false, lastCombatSummary: null }),
 
     submitQuiz: (userPredictions, _userTrample) => {
-        const { pendingOutcome, resolveCombat, addLog, players } = get();
+        const { pendingOutcome, resolveCombat, addLog } = get();
         if (!pendingOutcome) return;
 
         const attackersCount = get().attackers.length;
