@@ -95,6 +95,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     showTurnBanner: null,
     winner: null,
     showShop: false,
+    showTurnOrderModal: false,
 
     toggleAutoBattle: () => {
         const { autoBattle, nextPhase, performOpponentAttacks, activePlayerId, combatStep, autoBattleTimeout } = get();
@@ -191,6 +192,22 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     addLog: (message: string) => {
         set(state => ({ log: [...state.log, message] }));
+    },
+
+    openTurnOrderModal: () => {
+        set({ showTurnOrderModal: true });
+    },
+
+    startBattle: (startingPlayer: 'player1' | 'player2') => {
+        set({ showTurnOrderModal: false });
+        get().shuffleBoard();
+        
+        // Set the starting player
+        set({ activePlayerId: startingPlayer });
+        
+        const { addLog, players } = get();
+        const starter = players.find(p => p.id === startingPlayer);
+        addLog(`${starter?.name} goes first!`);
     },
 
     shuffleBoard: () => {

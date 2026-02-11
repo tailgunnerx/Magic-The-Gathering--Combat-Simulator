@@ -94,6 +94,7 @@ export interface GameState {
     winner: string | null;
 
     showShop: boolean;
+    showTurnOrderModal: boolean;
     
     // Actions
     addLog: (message: string) => void;
@@ -106,6 +107,8 @@ export interface GameState {
     getCombatHints: () => string[];
     toggleShop: () => void;
     purchaseUpgrade: (upgrade: string, cost: number) => void;
+    openTurnOrderModal: () => void;
+    startBattle: (startingPlayer: 'player1' | 'player2') => void;
 
     // Actions
     nextPhase: () => void;

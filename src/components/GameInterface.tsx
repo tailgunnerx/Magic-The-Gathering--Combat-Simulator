@@ -8,6 +8,7 @@ import { CombatSummaryModal } from './CombatSummaryModal';
 import { TurnBanner } from './TurnBanner';
 import { VictoryModal } from './VictoryModal';
 import { TreasureShop } from './TreasureShop';
+import { TurnOrderModal } from './TurnOrderModal';
 import { Shuffle } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -17,7 +18,9 @@ export const GameInterface = () => {
         activePlayerId,
         phase,
         combatStep,
-        shuffleBoard,
+        openTurnOrderModal,
+        startBattle,
+        showTurnOrderModal,
         toggleShop
     } = useGameStore();
 
@@ -27,11 +30,21 @@ export const GameInterface = () => {
     return (
         <div className="h-screen bg-neutral-950 text-white flex flex-col font-sans overflow-hidden">
             <VictoryModal />
+            <TurnOrderModal 
+                isOpen={showTurnOrderModal}
+                onSelect={(choice) => {
+                    if (choice === 'roll') {
+                        // D20 roll handled inside modal
+                    } else {
+                        startBattle(choice);
+                    }
+                }}
+            />
             {/* Top Bar - Minimal */}
             <div className="bg-neutral-900 p-3 shadow-md flex justify-between items-center z-30 border-b border-slate-800 shrink-0">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={shuffleBoard}
+                        onClick={openTurnOrderModal}
                         className="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md"
                     >
                         <Shuffle size={18} /> New Battle
