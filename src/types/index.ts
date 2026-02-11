@@ -17,6 +17,7 @@ export interface Card {
     damageTaken: number;
     controllerId: string;
     ownerId: string;
+    plusOneCounters: number;
 }
 
 export interface Player {
@@ -31,6 +32,7 @@ export interface Player {
     exile: Card[];
     commandZone: Card[];
     battlefield: Card[]; // References to card IDs might be better, but holding objects for now simplifes
+    gold: number;
 }
 
 export interface DamageEvent {
@@ -71,6 +73,7 @@ export interface GameState {
         playerCreaturesLost: number;
         opponentCreaturesLost: number;
         killLog: string[];
+        goldEarned: number;
     } | null;
     showSummary: boolean;
 
@@ -90,6 +93,8 @@ export interface GameState {
     log: string[];
     winner: string | null;
 
+    showShop: boolean;
+    
     // Actions
     addLog: (message: string) => void;
     toggleQuizMode: () => void;
@@ -99,6 +104,8 @@ export interface GameState {
     toggleAutoBattle: () => void;
     performOpponentAttacks: () => void;
     getCombatHints: () => string[];
+    toggleShop: () => void;
+    purchaseUpgrade: (upgrade: string, cost: number) => void;
 
     // Actions
     nextPhase: () => void;

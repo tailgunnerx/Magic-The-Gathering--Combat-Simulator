@@ -1,5 +1,5 @@
 import type { Player } from '../types';
-import { Heart, Skull, Shield } from 'lucide-react';
+import { Heart, Skull, Shield, Coins } from 'lucide-react';
 
 interface PlayerHUDProps {
     player: Player;
@@ -24,9 +24,15 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                     </div>
                 )}
 
+                {player.id === 'player1' && (
+                    <div className="flex items-center gap-2 text-yellow-500">
+                        <Coins size={24} fill="currentColor" />
+                        <span className="text-2xl font-bold">{player.gold}</span>
+                    </div>
+                )}
+
                 <div className="flex items-center gap-2 text-blue-400">
                     <Shield size={20} />
-                    {/* Abstract representation of library size or something else could go here */}
                     <span className="text-sm">{player.library.length} cards</span>
                 </div>
             </div>

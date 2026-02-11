@@ -28,8 +28,10 @@ const KEYWORD_COLORS: Record<string, string> = {
 
 export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLocked, blockIndicatorColor }: CardProps) => {
     const isTapped = card.tapped;
-    const power = parseInt(card.power || '0');
-    const toughness = parseInt(card.toughness || '0');
+    const basePower = parseInt(card.power || '0');
+    const baseToughness = parseInt(card.toughness || '0');
+    const power = basePower + (card.plusOneCounters || 0);
+    const toughness = baseToughness + (card.plusOneCounters || 0);
     const currentToughness = toughness - card.damageTaken;
 
     return (
@@ -87,6 +89,17 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                             </span>
                         ))}
                     </div>
+                )}
+
+                {/* +1/+1 Counter Indicator */}
+                {(card.plusOneCounters || 0) > 0 && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute bottom-2 left-2 bg-emerald-600 border-2 border-white text-white font-bold px-2 py-1 rounded-lg shadow-lg z-30"
+                    >
+                        <span className="text-sm">+{card.plusOneCounters}/+{card.plusOneCounters}</span>
+                    </motion.div>
                 )}
 
                 {/* Damage / Health Indicator */}

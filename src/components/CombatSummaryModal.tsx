@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingDown, ShieldAlert, Heart, Skull, X } from 'lucide-react';
+import { TrendingDown, ShieldAlert, Heart, Skull, X, Coins } from 'lucide-react';
 
 export const CombatSummaryModal = () => {
     const { lastCombatSummary, showSummary, closeSummary } = useGameStore();
@@ -70,6 +70,16 @@ export const CombatSummaryModal = () => {
                                 </div>
                                 <span className="text-lg font-black text-emerald-500">{lastCombatSummary.opponentCreaturesLost}</span>
                             </div>
+
+                            {lastCombatSummary.goldEarned > 0 && (
+                                <div className="flex items-center justify-between bg-yellow-950/20 p-4 rounded-xl border border-yellow-900/30">
+                                    <div className="flex items-center gap-3">
+                                        <Coins className="text-yellow-500" size={20} />
+                                        <span className="text-yellow-200 font-bold text-sm italic">Gold Earned</span>
+                                    </div>
+                                    <span className="text-lg font-black text-yellow-500">+{lastCombatSummary.goldEarned}</span>
+                                </div>
+                            )}
                         </div>
 
                         {/* Kill Feed */}

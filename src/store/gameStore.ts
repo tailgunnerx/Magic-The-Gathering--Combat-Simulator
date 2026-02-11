@@ -40,6 +40,7 @@ const createPlayer = (id: string, name: string): Player => {
         exile: [],
         commandZone: [],
         battlefield: [], // Init empty, filled by shuffle
+        gold: 0,
     };
 };
 
@@ -82,6 +83,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     autoBattleTimeout: null,
     showTurnBanner: null,
     winner: null,
+    showShop: false,
 
     toggleAutoBattle: () => {
         const { autoBattle, nextPhase, performOpponentAttacks, activePlayerId, combatStep, autoBattleTimeout } = get();
@@ -107,7 +109,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     closeSummary: () => set({ showSummary: false, lastCombatSummary: null }),
 
     submitQuiz: (userPredictions, _userTrample) => {
-        const { pendingOutcome, resolveCombat, addLog } = get();
+        const { pendingOutcome, resolveCombat, addLog, players } = get();
         if (!pendingOutcome) return;
 
         const attackersCount = get().attackers.length;
@@ -131,7 +133,44 @@ export const useGameStore = create<GameStore>((set, get) => ({
             }
         });
 
+        const incorrectCount = totalChecked - correctCount;
+        const goldEarned = correctCount * 10;
+
         addLog(`Quiz submitted! Result: ${correctCount}/${totalChecked} correct.`);
+        if (goldEarned > 0) {
+            addLog(`🪙 You earned ${goldEarned} gold!`);
+        }
+
+        // Update player gold and apply +1/+1 counters for incorrect answers
+        set(state => {
+            const newPlayers = state.players.map(p => {
+                if (p.id === 'player1') {
+                    return { ...p, gold: p.gold + goldEarned };
+                }
+                if (p.id === 'player2' && incorrectCount > 0) {
+                    // Add +1/+1 counters to random opponent creatures
+                    const availableCreatures = p.battlefield.filter(c => !pendingOutcome.deaths.includes(c.id));
+                    if (availableCreatures.length > 0) {
+                        const newBattlefield = [...p.battlefield];
+                        for (let i = 0; i < incorrectCount; i++) {
+                            const randomIndex = Math.floor(Math.random() * availableCreatures.length);
+                            const randomCreature = availableCreatures[randomIndex];
+                            const cardIndex = newBattlefield.findIndex(c => c.id === randomCreature.id);
+                            if (cardIndex !== -1) {
+                                newBattlefield[cardIndex] = {
+                                    ...newBattlefield[cardIndex],
+                                    plusOneCounters: newBattlefield[cardIndex].plusOneCounters + 1
+                                };
+                                addLog(`❌ ${randomCreature.name} gets a +1/+1 counter!`);
+                            }
+                        }
+                        return { ...p, battlefield: newBattlefield };
+                    }
+                }
+                return p;
+            });
+            return { players: newPlayers };
+        });
 
         // After quiz feedback (could be more elaborate, but starting with this)
         // We'll proceed to resolve.
@@ -164,7 +203,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     controllerId: p.id,
                     ownerId: p.id,
                     tapped: false,
-                    damageTaken: 0
+                    damageTaken: 0,
+                    plusOneCounters: 0
                 }));
 
                 return {
@@ -208,8 +248,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
             const attacker = attackerPlayer.battlefield.find(c => c.id === attackerId);
             if (!attacker) return;
 
-            const attPower = parseInt(attacker.power || '0');
-            const attToughness = parseInt(attacker.toughness || '0');
+            const attPower = parseInt(attacker.power || '0') + (attacker.plusOneCounters || 0);
+            const attToughness = parseInt(attacker.toughness || '0') + (attacker.plusOneCounters || 0);
 
             // Find best blocker
             // Strategy: 1. Kill and Survive, 2. Kill and Trade, 3. Survive (Stall), 4. Last Resort
@@ -222,8 +262,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 const blkReach = blocker.keywords?.includes('Reach');
                 if (attFlying && !blkFlying && !blkReach) return false;
 
-                const blkPower = parseInt(blocker.power || '0');
-                const blkToughness = parseInt(blocker.toughness || '0');
+                const blkPower = parseInt(blocker.power || '0') + (blocker.plusOneCounters || 0);
+                const blkToughness = parseInt(blocker.toughness || '0') + (blocker.plusOneCounters || 0);
                 const isBlkDeathtouch = blocker.keywords?.includes('Deathtouch');
                 const isAttDeathtouch = attacker.keywords?.includes('Deathtouch');
 
@@ -401,8 +441,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                         bIds.forEach(blkId => {
                             const blocker = p1.battlefield.find(c => c.id === blkId);
                             if (blocker && !hasKeyword(blocker, 'First Strike') && !hasKeyword(blocker, 'Double Strike')) {
-                                const attPower = parseInt(attacker.power || '0');
-                                const blkToughness = parseInt(blocker.toughness || '0');
+                                const attPower = parseInt(attacker.power || '0') + (attacker.plusOneCounters || 0);
+                                const blkToughness = parseInt(blocker.toughness || '0') + (blocker.plusOneCounters || 0);
                                 if (attPower >= blkToughness) {
                                     const otherAttackers = attackers.find(id => {
                                         const other = p2.battlefield.find(c => c.id === id);
@@ -445,11 +485,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const hasKeyword = (card: Card, keyword: string) =>
             card.keywords?.some(k => k.toLowerCase() === keyword.toLowerCase());
 
+        const getActualPower = (card: Card) => parseInt(card.power || '0') + (card.plusOneCounters || 0);
+        const getActualToughness = (card: Card) => parseInt(card.toughness || '0') + (card.plusOneCounters || 0);
+
         const checkLethal = (cardId: string) => {
             const card = getCard(cardId);
             if (!card) return true;
             const dmg = damageOnCard[cardId] || 0;
-            const tough = parseInt(card.toughness || '0');
+            const tough = getActualToughness(card);
             if (dmg >= tough) return true;
             if (dmg > 0) {
                 return damageEvents.some(e => e.targetId === cardId && e.isDeathtouch && e.damage > 0);
@@ -484,7 +527,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 if (!attackerShouldDeal) return;
 
                 const bIds = blockers[attId] || [];
-                const attPower = parseInt(attacker.power || '0');
+                const attPower = getActualPower(attacker);
                 const isLifelink = hasKeyword(attacker, 'Lifelink');
                 const isDeathtouch = hasKeyword(attacker, 'Deathtouch');
                 const isTrample = hasKeyword(attacker, 'Trample');
@@ -508,7 +551,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                         // to its blockers in order, and needs to know if the first is "done".
                         if (!blocker || checkLethal(blkId)) return;
 
-                        const tough = parseInt(blocker.toughness || '0');
+                        const tough = getActualToughness(blocker);
                         const alreadyTaken = damageOnCard[blkId] || 0;
                         const lethalNeeded = isDeathtouch ? 1 : Math.max(0, tough - alreadyTaken);
                         const assigned = isTrample ? Math.min(powerToAssign, lethalNeeded) : powerToAssign;
@@ -580,7 +623,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
                     if (!blockerShouldDeal) return;
 
-                    const blkPower = parseInt(blocker.power || '0');
+                    const blkPower = getActualPower(blocker);
                     const isLifelink = hasKeyword(blocker, 'Lifelink');
                     const isDeathtouch = hasKeyword(blocker, 'Deathtouch');
 
@@ -621,7 +664,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         allCombatants.forEach(card => {
             // Check for deathtouch from any event targeting this card
             const tookDeathtouch = damageEvents.some(e => e.targetId === card.id && e.isDeathtouch && e.damage > 0);
-            const tough = parseInt(card.toughness || '0');
+            const tough = getActualToughness(card);
             const dmg = damageOnCard[card.id] || 0;
 
             if (dmg >= tough || tookDeathtouch) {
@@ -685,7 +728,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         attackers.forEach(id => {
             const card = attackerProp?.battlefield.find(c => c.id === id);
             if (card) {
-                const pwr = parseInt(card.power || '0');
+                const pwr = parseInt(card.power || '0') + (card.plusOneCounters || 0);
                 incomingDmg += pwr;
                 if (blockers[id] && blockers[id].length > 0) {
                     blockedDmg += pwr; // Simplified: if blocked, we count the whole power as "contained" for the ratio
@@ -703,6 +746,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const p1Lost = p1?.battlefield.filter(c => outcome.deaths.includes(c.id)).length || 0;
         const p2Lost = p2?.battlefield.filter(c => outcome.deaths.includes(c.id)).length || 0;
 
+        // Calculate gold earned from killing opponent creatures
+        const goldPerKill = 5;
+        const goldEarned = p2Lost * goldPerKill;
+
         set({
             lastCombatSummary: {
                 totalIncoming: incomingDmg,
@@ -713,10 +760,21 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 defenderId: defenderPlayerId,
                 playerCreaturesLost: p1Lost,
                 opponentCreaturesLost: p2Lost,
-                killLog: outcome.deathDescriptions
+                killLog: outcome.deathDescriptions,
+                goldEarned
             },
             showSummary: true
         });
+
+        // Award gold to player for kills
+        if (goldEarned > 0 && activePlayerId === 'player1') {
+            set(state => ({
+                players: state.players.map(p =>
+                    p.id === 'player1' ? { ...p, gold: p.gold + goldEarned } : p
+                )
+            }));
+            addLog(`🪙 Earned ${goldEarned} gold from kills!`);
+        }
 
         // Apply Damage Events
         set(state => {
@@ -1099,6 +1157,69 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 blockers: newBlockers,
                 selectedCardId: attackerId // Keep the attacker selected for multi-blocking
             };
+        });
+    },
+
+    toggleShop: () => {
+        set(state => ({ showShop: !state.showShop }));
+    },
+
+    purchaseUpgrade: (upgrade: string, cost: number) => {
+        const { players, addLog } = get();
+        const player = players.find(p => p.id === 'player1');
+        
+        if (!player || player.gold < cost) {
+            addLog(`Not enough gold! Need ${cost}, have ${player?.gold || 0}.`);
+            return;
+        }
+
+        set(state => {
+            const newPlayers = state.players.map(p => {
+                if (p.id !== 'player1') return p;
+
+                const newBattlefield = [...p.battlefield];
+                
+                if (upgrade === 'plus_counter' || upgrade === 'minus_counter') {
+                    const targetPlayer = upgrade === 'plus_counter' ? 'player1' : 'player2';
+                    const targetCreatures = state.players.find(pl => pl.id === targetPlayer)?.battlefield || [];
+                    
+                    if (targetCreatures.length > 0) {
+                        const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                        const updatedPlayers = state.players.map(pl => {
+                            if (pl.id !== targetPlayer) return pl;
+                            return {
+                                ...pl,
+                                battlefield: pl.battlefield.map(c =>
+                                    c.id === randomCreature.id
+                                        ? { ...c, plusOneCounters: Math.max(0, c.plusOneCounters + (upgrade === 'plus_counter' ? 1 : -1)) }
+                                        : c
+                                )
+                            };
+                        });
+                        
+                        addLog(`${upgrade === 'plus_counter' ? '🪙 +1/+1' : '💀 -1/-1'} counter applied to ${randomCreature.name}!`);
+                        return updatedPlayers.find(pl => pl.id === 'player1')!;
+                    }
+                } else {
+                    const availableCreatures = newBattlefield.filter(c => !c.keywords.includes(upgrade));
+                    if (availableCreatures.length > 0) {
+                        const randomCreature = availableCreatures[Math.floor(Math.random() * availableCreatures.length)];
+                        const creatureIndex = newBattlefield.findIndex(c => c.id === randomCreature.id);
+                        
+                        if (creatureIndex !== -1) {
+                            newBattlefield[creatureIndex] = {
+                                ...newBattlefield[creatureIndex],
+                                keywords: [...newBattlefield[creatureIndex].keywords, upgrade]
+                            };
+                            addLog(`✨ ${randomCreature.name} gains ${upgrade}!`);
+                        }
+                    }
+                }
+
+                return { ...p, gold: p.gold - cost, battlefield: newBattlefield };
+            });
+
+            return { players: newPlayers };
         });
     }
 }));

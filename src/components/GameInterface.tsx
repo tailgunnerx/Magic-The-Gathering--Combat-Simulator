@@ -7,6 +7,7 @@ import { CombatQuizModal } from './CombatQuizModal';
 import { CombatSummaryModal } from './CombatSummaryModal';
 import { TurnBanner } from './TurnBanner';
 import { VictoryModal } from './VictoryModal';
+import { TreasureShop } from './TreasureShop';
 import { Shuffle, GraduationCap, Swords } from 'lucide-react';
 
 export const GameInterface = () => {
@@ -19,7 +20,8 @@ export const GameInterface = () => {
         quizMode,
         toggleQuizMode,
         autoBattle,
-        toggleAutoBattle
+        toggleAutoBattle,
+        toggleShop
     } = useGameStore();
 
     const player1 = players[0];
@@ -106,6 +108,7 @@ export const GameInterface = () => {
                     <CombatWizard />
                     <CombatQuizModal />
                     <CombatSummaryModal />
+                    <TreasureShop />
 
                     {/* Main Game Plane */}
                     <div className="flex-grow flex flex-col relative overflow-hidden perspective-1000 bg-neutral-900">
@@ -138,6 +141,23 @@ export const GameInterface = () => {
 
                             <div className="absolute bottom-4 left-4 z-20">
                                 <PlayerHUD player={player1} isActive={activePlayerId === player1.id} />
+                            </div>
+
+                            {/* Treasure Chest Button */}
+                            <div className="absolute bottom-4 right-4 z-20">
+                                <button
+                                    onClick={toggleShop}
+                                    className="group relative bg-gradient-to-br from-amber-600 to-amber-800 hover:from-amber-500 hover:to-amber-700 text-white font-black px-6 py-4 rounded-2xl shadow-2xl transition-all active:scale-95 border-4 border-amber-400 hover:border-amber-300"
+                                >
+                                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/gold-scale.png')] opacity-30 rounded-xl"></div>
+                                    <div className="relative flex items-center gap-2">
+                                        <span className="text-3xl">💎</span>
+                                        <span className="text-xl uppercase tracking-tight">Shop</span>
+                                    </div>
+                                    <div className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                                        NEW
+                                    </div>
+                                </button>
                             </div>
                         </div>
                     </div>
