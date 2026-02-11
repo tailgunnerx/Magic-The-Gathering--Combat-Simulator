@@ -777,26 +777,28 @@ export const useGameStore = create<GameStore>((set, get) => ({
             showSummary: true
         });
 
-        // Award gold to player for kills
+        // Log gold earnings
         if (goldEarned > 0 && activePlayerId === 'player1') {
-            set(state => ({
-                players: state.players.map(p =>
-                    p.id === 'player1' ? { ...p, gold: p.gold + goldEarned } : p
-                )
-            }));
             addLog(`🪙 Earned ${goldEarned} gold from kills!`);
         }
 
-        // Apply Damage Events
+        // Apply Damage Events and award gold in single state update
         set(state => {
             const newPlayers = state.players.map(p => {
                 let newLife = p.life;
+                let newGold = p.gold;
+                
                 if (p.id === attackerPlayerId) newLife += outcome.attackerLifeGained;
                 if (p.id === defenderPlayerId) {
                     const totalToPlayer = outcome.damageEvents
                         .filter((e: DamageEvent) => e.targetId === defenderPlayerId)
                         .reduce((sum: number, e: DamageEvent) => sum + e.damage, 0);
                     newLife -= totalToPlayer;
+                }
+
+                // Award gold to player1 for kills
+                if (p.id === 'player1' && goldEarned > 0 && activePlayerId === 'player1') {
+                    newGold += goldEarned;
                 }
 
                 const updatedBattlefield = p.battlefield.map(card => {
@@ -806,7 +808,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     return { ...card, damageTaken: card.damageTaken + damageTaken };
                 });
 
-                return { ...p, life: newLife, battlefield: updatedBattlefield };
+                return { ...p, life: newLife, gold: newGold, battlefield: updatedBattlefield };
             });
 
             // Process deaths
@@ -823,27 +825,31 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 };
             });
 
-            // CHECK FOR VICTORY
-            const p1Wiped = finalPlayers[0].battlefield.length === 0;
-            const p2Wiped = finalPlayers[1].battlefield.length === 0;
-            const p1Dead = finalPlayers[0].life <= 0;
-            const p2Dead = finalPlayers[1].life <= 0;
+            // CHECK FOR VICTORY - only if we have valid player data
+            if (finalPlayers && finalPlayers.length >= 2) {
+                const p1Wiped = finalPlayers[0]?.battlefield?.length === 0;
+                const p2Wiped = finalPlayers[1]?.battlefield?.length === 0;
+                const p1Dead = (finalPlayers[0]?.life || 0) <= 0;
+                const p2Dead = (finalPlayers[1]?.life || 0) <= 0;
 
-            if (p1Wiped || p2Wiped || p1Dead || p2Dead) {
-                const winnerId = (p1Wiped || p1Dead) ? 'player2' : 'player1';
-                setTimeout(() => {
-                    set({
-                        winner: winnerId,
-                        autoBattle: false
-                    });
-                    if (p1Wiped || p2Wiped) {
-                        addLog(`💀 ${p1Wiped ? finalPlayers[0].name : finalPlayers[1].name}'s army has been destroyed!`);
-                    }
-                    if (p1Dead || p2Dead) {
-                        addLog(`💀 ${p1Dead ? finalPlayers[0].name : finalPlayers[1].name} has been defeated (Life: ${p1Dead ? finalPlayers[0].life : finalPlayers[1].life})!`);
-                    }
-                    addLog(`--- BATTLE CONCLUDED: ${winnerId === 'player1' ? 'VICTORY' : 'DEFEAT'} ---`);
-                }, 1000); // Small delay to let deaths animate
+                if (p1Wiped || p2Wiped || p1Dead || p2Dead) {
+                    const winnerId = (p1Wiped || p1Dead) ? 'player2' : 'player1';
+                    setTimeout(() => {
+                        set({
+                            winner: winnerId,
+                            autoBattle: false
+                        });
+                        if (p1Wiped || p2Wiped) {
+                            const loser = p1Wiped ? finalPlayers[0] : finalPlayers[1];
+                            addLog(`💀 ${loser?.name || 'Player'}'s army has been destroyed!`);
+                        }
+                        if (p1Dead || p2Dead) {
+                            const loser = p1Dead ? finalPlayers[0] : finalPlayers[1];
+                            addLog(`💀 ${loser?.name || 'Player'} has been defeated (Life: ${loser?.life || 0})!`);
+                        }
+                        addLog(`--- BATTLE CONCLUDED: ${winnerId === 'player1' ? 'VICTORY' : 'DEFEAT'} ---`);
+                    }, 1000); // Small delay to let deaths animate
+                }
             }
 
             return { players: finalPlayers, pendingOutcome: null };

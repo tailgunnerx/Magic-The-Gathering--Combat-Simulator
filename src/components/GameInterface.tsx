@@ -205,7 +205,7 @@ export const GameInterface = () => {
                                             boxShadow: '0 0 60px rgba(217, 119, 6, 1), 0 0 100px rgba(251, 191, 36, 1), 0 0 150px rgba(234, 179, 8, 0.8)'
                                         }}
                                         whileTap={{ scale: 0.95 }}
-                                        className="group relative bg-gradient-to-br from-amber-500 via-yellow-400 to-amber-600 hover:from-yellow-300 hover:via-amber-400 hover:to-yellow-500 text-white font-black px-8 py-5 rounded-2xl shadow-2xl transition-all border-4 border-yellow-300 hover:border-yellow-200 overflow-hidden"
+                                        className="group relative bg-gradient-to-br from-amber-500 via-yellow-400 to-amber-600 hover:from-yellow-300 hover:via-amber-400 hover:to-yellow-500 text-white font-black px-8 py-5 rounded-2xl shadow-2xl transition-all border-4 border-yellow-300 hover:border-yellow-200"
                                     >
                                         {/* Animated shine overlay */}
                                         <motion.div
@@ -217,7 +217,7 @@ export const GameInterface = () => {
                                                 repeat: Infinity,
                                                 ease: 'linear'
                                             }}
-                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent"
+                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent overflow-hidden rounded-2xl"
                                             style={{ width: '50%' }}
                                         />
                                         
@@ -243,25 +243,26 @@ export const GameInterface = () => {
                                             </motion.span>
                                             <span className="text-2xl uppercase tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Shop</span>
                                         </div>
-                                        
-                                        <motion.div
-                                            animate={{
-                                                scale: [1, 1.2, 1],
-                                                rotate: [0, 5, -5, 0]
-                                            }}
-                                            transition={{
-                                                duration: 1,
-                                                repeat: Infinity,
-                                                repeatType: 'loop'
-                                            }}
-                                            className="absolute -top-3 -right-3 bg-gradient-to-br from-red-500 to-red-700 text-white text-sm font-black px-3 py-1.5 rounded-full shadow-lg border-2 border-white"
-                                            style={{
-                                                boxShadow: '0 0 20px rgba(239, 68, 68, 0.8)'
-                                            }}
-                                        >
-                                            NEW
-                                        </motion.div>
                                     </motion.button>
+                                    
+                                    {/* NEW Badge - Outside button */}
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.2, 1],
+                                            rotate: [0, 5, -5, 0]
+                                        }}
+                                        transition={{
+                                            duration: 1,
+                                            repeat: Infinity,
+                                            repeatType: 'loop'
+                                        }}
+                                        className="absolute -top-3 -right-3 bg-gradient-to-br from-red-500 to-red-700 text-white text-sm font-black px-3 py-1.5 rounded-full shadow-lg border-2 border-white z-10"
+                                        style={{
+                                            boxShadow: '0 0 20px rgba(239, 68, 68, 0.8)'
+                                        }}
+                                    >
+                                        NEW
+                                    </motion.div>
                                 </div>
                             </div>
                         </div>
