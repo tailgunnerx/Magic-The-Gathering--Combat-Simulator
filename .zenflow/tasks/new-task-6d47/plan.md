@@ -181,6 +181,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 1.5: Download Monitor & Progress UI
+<!-- chat-id: 1f5c7337-1e20-446a-84bb-19f79e4c1616 -->
 
 **Goal**: Real-time download monitoring with beautiful progress visualization
 
