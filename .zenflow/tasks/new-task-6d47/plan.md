@@ -517,3 +517,30 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 - User feedback is positive
 - FAQ answers common questions
 - Roadmap is updated with learnings
+
+### [ ] Step: step5/newdev
+<!-- chat-id: 34cd0af4-f8cf-4f29-bce9-35e441d2a4e9 -->
+<!-- agent: zencoder-default -->
+
+5: Download Monitor & Progress UI
+Goal: Real-time download monitoring with beautiful progress visualization
+
+Tasks:
+
+Create download progress card component
+Implement WebSocket connection for real-time updates
+Build progress bars with animation (framer-motion)
+Add download statistics (speed, ETA, files)
+Create pause/resume/stop controls
+Implement log viewer with filtering
+Add download queue management
+Create mini progress indicator for sidebar
+Handle connection loss and reconnection
+Write tests for WebSocket handlers
+Verification:
+
+Progress updates in real-time without lag
+Controls (pause/resume/stop) work correctly
+Log viewer filters by level (debug/info/error)
+WebSocket reconnects on connection loss
+Manual download test shows accurate progress
