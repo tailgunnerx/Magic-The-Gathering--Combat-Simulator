@@ -4,7 +4,7 @@ import type { GameState, Player, Phase, CombatPhaseStep, Card, CombatOutcome, Da
 const INITIAL_LIFE = 40;
 
 // Card Pool - ~20 varied creatures
-const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters'>[] = [
+const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters'>[] = [
     { name: "Serra Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, Vigilance", power: "4", toughness: "4", colors: ["W"], keywords: ["Flying", "Vigilance"], imageUrl: "https://api.scryfall.com/cards/named?exact=Serra+Angel&format=image&version=normal" },
     { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
     { name: "Elite Vanguard", manaCost: "{W}", typeLine: "Creature — Human Soldier", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Elite+Vanguard&format=image&version=normal" },
@@ -29,7 +29,6 @@ const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'dama
     { name: "Soul Warden", manaCost: "{W}", typeLine: "Creature — Human Cleric", oracleText: "", power: "1", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Soul+Warden&format=image&version=normal" },
     { name: "Grand Abolisher", manaCost: "{W}{W}", typeLine: "Creature — Human Cleric", oracleText: "", power: "2", toughness: "2", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Grand+Abolisher&format=image&version=normal" },
     { name: "Thalia, Guardian of Thraben", manaCost: "{1}{W}", typeLine: "Legendary Creature — Human Soldier", oracleText: "First Strike", power: "2", toughness: "1", colors: ["W"], keywords: ["First Strike"], imageUrl: "https://api.scryfall.com/cards/named?exact=Thalia%2C+Guardian+of+Thraben&format=image&version=normal" },
-    { name: "Liliana of the Veil", manaCost: "{1}{B}{B}", typeLine: "Legendary Creature — Human Wizard", oracleText: "", power: "2", toughness: "3", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Liliana+of+the+Veil&format=image&version=normal" },
     { name: "Olivia Voldaren", manaCost: "{2}{B}{R}", typeLine: "Legendary Creature — Vampire", oracleText: "Flying", power: "3", toughness: "3", colors: ["B", "R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Olivia+Voldaren&format=image&version=normal" },
     { name: "Aurelia, the Warleader", manaCost: "{2}{R}{R}{W}{W}", typeLine: "Legendary Creature — Angel", oracleText: "Flying, Vigilance, Haste", power: "3", toughness: "4", colors: ["R", "W"], keywords: ["Flying", "Vigilance", "Haste"], imageUrl: "https://api.scryfall.com/cards/named?exact=Aurelia%2C+the+Warleader&format=image&version=normal" },
     { name: "Liliana's Standard Bearer", manaCost: "{2}{B}", typeLine: "Creature — Zombie Knight", oracleText: "", power: "3", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Liliana%27s+Standard+Bearer&format=image&version=normal" },
@@ -232,7 +231,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     ownerId: p.id,
                     tapped: false,
                     damageTaken: 0,
-                    plusOneCounters: 0
+                    plusOneCounters: 0,
+                    minusOneCounters: 0
                 }));
 
                 return {
@@ -513,8 +513,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const hasKeyword = (card: Card, keyword: string) =>
             card.keywords?.some(k => k.toLowerCase() === keyword.toLowerCase());
 
-        const getActualPower = (card: Card) => parseInt(card.power || '0') + (card.plusOneCounters || 0);
-        const getActualToughness = (card: Card) => parseInt(card.toughness || '0') + (card.plusOneCounters || 0);
+        const getActualPower = (card: Card) => parseInt(card.power || '0') + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
+        const getActualToughness = (card: Card) => parseInt(card.toughness || '0') + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
 
         const checkLethal = (cardId: string) => {
             const card = getCard(cardId);
@@ -1228,7 +1228,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     ownerId: 'player1',
                     tapped: false,
                     damageTaken: 0,
-                    plusOneCounters: 0
+                    plusOneCounters: 0,
+                    minusOneCounters: 0
                 };
                 
                 updatedPlayers = state.players.map(p => {
@@ -1248,18 +1249,42 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
                     updatedPlayers = state.players.map(pl => {
                         if (pl.id !== targetPlayer) return pl;
+                        
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                if (upgrade === 'plus_counter') {
+                                    return { ...c, plusOneCounters: c.plusOneCounters + 1 };
+                                } else {
+                                    return { ...c, minusOneCounters: c.minusOneCounters + 1 };
+                                }
+                            }
+                            return c;
+                        }).filter(c => {
+                            const baseToughness = parseInt(c.toughness || '0');
+                            const netToughness = baseToughness + (c.plusOneCounters || 0) - (c.minusOneCounters || 0);
+                            return netToughness > 0;
+                        });
+                        
                         return {
                             ...pl,
-                            battlefield: pl.battlefield.map(c =>
-                                c.id === randomCreature.id
-                                    ? { ...c, plusOneCounters: Math.max(0, c.plusOneCounters + (upgrade === 'plus_counter' ? 1 : -1)) }
-                                    : c
-                            )
+                            battlefield: updatedBattlefield
                         };
                     });
                     
-                    addLog(`${upgrade === 'plus_counter' ? '🪙 +1/+1' : '💀 -1/-1'} counter applied to ${randomCreature.name}!`);
+                    const baseToughness = parseInt(randomCreature.toughness || '0');
+                    const netToughness = baseToughness + (randomCreature.plusOneCounters || 0) - (randomCreature.minusOneCounters || 0) - (upgrade === 'minus_counter' ? 1 : 0);
+                    
+                    if (upgrade === 'minus_counter' && netToughness <= 0) {
+                        addLog(`💀 -1/-1 counter applied to ${randomCreature.name} - creature dies!`);
+                    } else {
+                        addLog(`${upgrade === 'plus_counter' ? '🪙 +1/+1' : '💀 -1/-1'} counter applied to ${randomCreature.name}!`);
+                    }
                 }
+            } else if (upgrade === 'life_gain') {
+                updatedPlayers = state.players.map(p => 
+                    p.id === 'player1' ? { ...p, life: p.life + 2 } : p
+                );
+                addLog(`💖 You gained 2 life!`);
             } else {
                 updatedPlayers = state.players.map(p => {
                     if (p.id !== 'player1') return p;

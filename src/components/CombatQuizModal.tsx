@@ -139,8 +139,13 @@ export const CombatQuizModal = () => {
                                                 +{pair.attacker.plusOneCounters}/+{pair.attacker.plusOneCounters}
                                             </div>
                                         )}
+                                        {(pair.attacker.minusOneCounters || 0) > 0 && (
+                                            <div className="absolute -top-1 -right-1 bg-purple-600 text-[8px] font-bold px-1 rounded text-white border border-white/20">
+                                                -{pair.attacker.minusOneCounters}/-{pair.attacker.minusOneCounters}
+                                            </div>
+                                        )}
                                         <div className="absolute -bottom-1 -right-1 bg-red-600 text-[10px] font-bold px-1 rounded text-white border border-white/20">
-                                            {parseInt(pair.attacker.power || '0') + (pair.attacker.plusOneCounters || 0)}/{parseInt(pair.attacker.toughness || '0') + (pair.attacker.plusOneCounters || 0)}
+                                            {parseInt(pair.attacker.power || '0') + (pair.attacker.plusOneCounters || 0) - (pair.attacker.minusOneCounters || 0)}/{parseInt(pair.attacker.toughness || '0') + (pair.attacker.plusOneCounters || 0) - (pair.attacker.minusOneCounters || 0)}
                                         </div>
                                     </div>
                                     <div>
@@ -187,8 +192,13 @@ export const CombatQuizModal = () => {
                                                             +{blocker.plusOneCounters}/+{blocker.plusOneCounters}
                                                         </div>
                                                     )}
+                                                    {(blocker.minusOneCounters || 0) > 0 && (
+                                                        <div className="absolute -top-1 -right-1 bg-purple-600 text-[8px] font-bold px-1 rounded text-white border border-white/20">
+                                                            -{blocker.minusOneCounters}/-{blocker.minusOneCounters}
+                                                        </div>
+                                                    )}
                                                     <div className="absolute -bottom-1 -right-1 bg-blue-600 text-[10px] font-bold px-1 rounded text-white border border-white/20">
-                                                        {parseInt(blocker.power || '0') + (blocker.plusOneCounters || 0)}/{parseInt(blocker.toughness || '0') + (blocker.plusOneCounters || 0)}
+                                                        {parseInt(blocker.power || '0') + (blocker.plusOneCounters || 0) - (blocker.minusOneCounters || 0)}/{parseInt(blocker.toughness || '0') + (blocker.plusOneCounters || 0) - (blocker.minusOneCounters || 0)}
                                                     </div>
                                                 </div>
                                                 <div>

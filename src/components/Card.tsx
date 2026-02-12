@@ -30,8 +30,8 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
     const isTapped = card.tapped;
     const basePower = parseInt(card.power || '0');
     const baseToughness = parseInt(card.toughness || '0');
-    const power = basePower + (card.plusOneCounters || 0);
-    const toughness = baseToughness + (card.plusOneCounters || 0);
+    const power = basePower + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
+    const toughness = baseToughness + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
     const currentToughness = toughness - card.damageTaken;
 
     return (

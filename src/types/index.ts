@@ -18,6 +18,7 @@ export interface Card {
     controllerId: string;
     ownerId: string;
     plusOneCounters: number;
+    minusOneCounters: number;
 }
 
 export interface Player {

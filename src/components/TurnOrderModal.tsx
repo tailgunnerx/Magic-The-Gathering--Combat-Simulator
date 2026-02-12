@@ -22,8 +22,12 @@ export const TurnOrderModal = ({ isOpen, onSelect }: TurnOrderModalProps) => {
             setRolling(false);
 
             setTimeout(() => {
-                const winner = p1Roll >= p2Roll ? 'player1' : 'player2';
-                onSelect(winner);
+                if (p1Roll === p2Roll) {
+                    handleRoll();
+                } else {
+                    const winner = p1Roll > p2Roll ? 'player1' : 'player2';
+                    onSelect(winner);
+                }
             }, 3000);
         }, 2000);
     };

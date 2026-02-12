@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet, Heart, Eye, Plus } from 'lucide-react';
+import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet, Heart, Eye, Plus, Swords, HeartPulse } from 'lucide-react';
 
 interface ShopItem {
     id: string;
@@ -24,7 +24,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'minus_counter',
         name: '-1/-1 Counter',
         description: 'Give a random opponent creature -1/-1',
-        cost: 50,
+        cost: 80,
         icon: <Skull className="text-purple-400" />,
         category: 'small'
     },
@@ -83,16 +83,34 @@ const SHOP_ITEMS: ShopItem[] = [
         cost: 65,
         icon: <Eye className="text-slate-300" />,
         category: 'big'
+    },
+    {
+        id: 'Double Strike',
+        name: 'Double Strike',
+        description: 'Grant Double Strike to a random creature you control',
+        cost: 90,
+        icon: <Swords className="text-red-500" />,
+        category: 'big'
+    },
+    {
+        id: 'life_gain',
+        name: '+2 Life',
+        description: 'Gain 2 life points',
+        cost: 40,
+        icon: <HeartPulse className="text-rose-400" />,
+        category: 'small'
     }
 ];
 
 export const TreasureShop = () => {
-    const { showShop, toggleShop, players, purchaseUpgrade } = useGameStore();
+    const { showShop, toggleShop, players, purchaseUpgrade, activePlayerId } = useGameStore();
     const player = players.find(p => p.id === 'player1');
+    const isPlayerTurn = activePlayerId === 'player1';
 
     if (!showShop) return null;
 
     const handlePurchase = (item: ShopItem) => {
+        if (!isPlayerTurn) return;
         purchaseUpgrade(item.id, item.cost);
     };
 
@@ -141,6 +159,7 @@ export const TreasureShop = () => {
                                         item={item}
                                         playerGold={player?.gold || 0}
                                         onPurchase={handlePurchase}
+                                        isPlayerTurn={isPlayerTurn}
                                     />
                                 ))}
                             </div>
@@ -159,6 +178,7 @@ export const TreasureShop = () => {
                                         item={item}
                                         playerGold={player?.gold || 0}
                                         onPurchase={handlePurchase}
+                                        isPlayerTurn={isPlayerTurn}
                                     />
                                 ))}
                             </div>
@@ -170,16 +190,17 @@ export const TreasureShop = () => {
     );
 };
 
-const ShopItemCard = ({ item, playerGold, onPurchase }: { item: ShopItem, playerGold: number, onPurchase: (item: ShopItem) => void }) => {
+const ShopItemCard = ({ item, playerGold, onPurchase, isPlayerTurn }: { item: ShopItem, playerGold: number, onPurchase: (item: ShopItem) => void, isPlayerTurn: boolean }) => {
     const canAfford = playerGold >= item.cost;
+    const canPurchase = canAfford && isPlayerTurn;
     const isPremium = item.category === 'big';
 
     return (
         <motion.button
-            whileHover={canAfford ? { scale: 1.05 } : {}}
-            whileTap={canAfford ? { scale: 0.95 } : {}}
-            onClick={() => canAfford && onPurchase(item)}
-            disabled={!canAfford}
+            whileHover={canPurchase ? { scale: 1.05 } : {}}
+            whileTap={canPurchase ? { scale: 0.95 } : {}}
+            onClick={() => canPurchase && onPurchase(item)}
+            disabled={!canPurchase}
             className={`
                 relative p-4 rounded-xl border-2 transition-all text-left
                 ${canAfford
@@ -212,7 +233,14 @@ const ShopItemCard = ({ item, playerGold, onPurchase }: { item: ShopItem, player
                 </div>
             </div>
 
-            {!canAfford && (
+            {!isPlayerTurn && (
+                <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-orange-950/60 backdrop-blur-sm flex items-center justify-center rounded-xl border-2 border-orange-900/50">
+                    <div className="bg-orange-900/80 px-3 py-2 rounded-lg border border-orange-500/50 shadow-lg">
+                        <span className="text-orange-200 font-bold text-xs uppercase tracking-wide">⏳ Wait Your Turn</span>
+                    </div>
+                </div>
+            )}
+            {isPlayerTurn && !canAfford && (
                 <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-red-950/60 backdrop-blur-sm flex items-center justify-center rounded-xl border-2 border-red-900/50">
                     <div className="bg-red-900/80 px-3 py-2 rounded-lg border border-red-500/50 shadow-lg">
                         <span className="text-red-200 font-bold text-xs uppercase tracking-wide">🔒 Not Enough Gold</span>
