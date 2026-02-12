@@ -113,6 +113,18 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                     </motion.div>
                 )}
 
+                {/* Shield Counter Indicator */}
+                {(card.shieldCounters || 0) > 0 && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute top-2 right-2 bg-cyan-500 border-2 border-white text-white font-bold px-2 py-1 rounded-full shadow-lg z-30 flex items-center gap-1"
+                    >
+                        <span className="text-xs">🛡️</span>
+                        <span className="text-sm">{card.shieldCounters}</span>
+                    </motion.div>
+                )}
+
                 {/* Damage / Health Indicator */}
                 {card.damageTaken > 0 && (
                     <motion.div

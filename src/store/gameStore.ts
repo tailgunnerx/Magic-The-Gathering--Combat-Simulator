@@ -4,7 +4,7 @@ import type { GameState, Player, Phase, CombatPhaseStep, Card, CombatOutcome, Da
 const INITIAL_LIFE = 40;
 
 // Card Pool - ~20 varied creatures
-const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters' | 'summoningSickness'>[] = [
+const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters' | 'summoningSickness' | 'shieldCounters'>[] = [
     { name: "Serra Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, Vigilance", power: "4", toughness: "4", colors: ["W"], keywords: ["Flying", "Vigilance"], imageUrl: "https://api.scryfall.com/cards/named?exact=Serra+Angel&format=image&version=normal" },
     { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
     { name: "Elite Vanguard", manaCost: "{W}", typeLine: "Creature — Human Soldier", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Elite+Vanguard&format=image&version=normal" },
@@ -146,10 +146,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
         const incorrectCount = totalChecked - correctCount;
         const goldEarned = correctCount * 10;
+        const opponentGoldEarned = incorrectCount * 10;
 
         addLog(`Quiz submitted! Result: ${correctCount}/${totalChecked} correct.`);
         if (goldEarned > 0) {
             addLog(`🪙 You earned ${goldEarned} gold!`);
+        }
+        if (opponentGoldEarned > 0) {
+            addLog(`💰 Opponent earned ${opponentGoldEarned} gold from your mistakes!`);
         }
 
         // Update player gold and apply +1/+1 counters for incorrect answers
@@ -175,8 +179,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
                                 addLog(`❌ ${randomCreature.name} gets a +1/+1 counter!`);
                             }
                         }
-                        return { ...p, battlefield: newBattlefield };
+                        return { ...p, battlefield: newBattlefield, gold: p.gold + opponentGoldEarned };
                     }
+                    return { ...p, gold: p.gold + opponentGoldEarned };
                 }
                 return p;
             });
@@ -233,7 +238,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     damageTaken: 0,
                     plusOneCounters: 0,
                     minusOneCounters: 0,
-                    summoningSickness: true
+                    summoningSickness: false,
+                    shieldCounters: 0
                 }));
 
                 return {
@@ -778,6 +784,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         // Calculate gold earned from killing opponent creatures
         const goldPerKill = 25;
         const goldEarned = p2Lost * goldPerKill;
+        const opponentGoldFromKills = p1Lost * goldPerKill;
 
         set({
             lastCombatSummary: {
@@ -799,6 +806,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
         if (goldEarned > 0 && activePlayerId === 'player1') {
             addLog(`🪙 Earned ${goldEarned} gold from kills!`);
         }
+        if (opponentGoldFromKills > 0 && activePlayerId === 'player2') {
+            addLog(`💰 Opponent earned ${opponentGoldFromKills} gold from kills!`);
+        }
 
         // Apply Damage Events and award gold in single state update
         set(state => {
@@ -814,9 +824,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     newLife -= totalToPlayer;
                 }
 
-                // Award gold to player1 for kills
+                // Award gold for kills
                 if (p.id === 'player1' && goldEarned > 0 && activePlayerId === 'player1') {
                     newGold += goldEarned;
+                }
+                if (p.id === 'player2' && opponentGoldFromKills > 0 && activePlayerId === 'player2') {
+                    newGold += opponentGoldFromKills;
                 }
 
                 const updatedBattlefield = p.battlefield.map(card => {
@@ -829,17 +842,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 return { ...p, life: newLife, gold: newGold, battlefield: updatedBattlefield };
             });
 
-            // Process deaths
+            // Process deaths - check for shield counters
             const finalPlayers = newPlayers.map(p => {
-                const deadCards = p.battlefield.filter(c => outcome.deaths.includes(c.id));
-                const livingCards = p.battlefield.filter(c => !outcome.deaths.includes(c.id));
-
-                deadCards.forEach(c => addLog(`${p.name}'s ${c.name} dies.`));
-
+                const actualDeadCards: Card[] = [];
+                const savedByShieldCards: Card[] = [];
+                
+                p.battlefield.forEach(c => {
+                    if (outcome.deaths.includes(c.id)) {
+                        // Creature would die - check for shield counter
+                        if (c.shieldCounters > 0) {
+                            // Shield counter saves it - remove one shield counter
+                            savedByShieldCards.push({ ...c, shieldCounters: c.shieldCounters - 1 });
+                            addLog(`🛡️ ${p.name}'s ${c.name} is saved by a shield counter!`);
+                        } else {
+                            // No shield counter - creature dies
+                            actualDeadCards.push(c);
+                            addLog(`${p.name}'s ${c.name} dies.`);
+                        }
+                    }
+                });
+                
+                const survivingCards = p.battlefield.filter(c => !outcome.deaths.includes(c.id));
+                
                 return {
                     ...p,
-                    battlefield: livingCards,
-                    graveyard: [...p.graveyard, ...deadCards]
+                    battlefield: [...survivingCards, ...savedByShieldCards],
+                    graveyard: [...p.graveyard, ...actualDeadCards]
                 };
             });
 
@@ -1008,6 +1036,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
             set({ showTurnBanner: nextPlayerName });
             setTimeout(() => set({ showTurnBanner: null }), 2000);
+
+            // AI shop purchases at start of their turn
+            if (nextActivePlayerId === 'player2') {
+                setTimeout(() => {
+                    get().performAIShopPurchases();
+                }, 800);
+            }
 
             set(state => ({
                 players: state.players.map(p => ({
@@ -1238,7 +1273,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     damageTaken: 0,
                     plusOneCounters: 0,
                     minusOneCounters: 0,
-                    summoningSickness: true
+                    summoningSickness: true,
+                    shieldCounters: 0
                 };
                 
                 updatedPlayers = state.players.map(p => {
@@ -1306,7 +1342,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     damageTaken: 0,
                     plusOneCounters: 0,
                     minusOneCounters: 0,
-                    summoningSickness: true
+                    summoningSickness: true,
+                    shieldCounters: 0
                 };
                 
                 // Random gold between 0 and 200
@@ -1330,6 +1367,25 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 addLog(`🎲 GAMBLE! Spawned ${newCreature.name} for opponent - you earned ${goldEarned} gold!`);
                 // No cost deduction since it's free, but we still return here to skip the final gold deduction
                 return { players: updatedPlayers };
+            } else if (upgrade === 'shield_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player1')?.battlefield || [];
+                
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player1') return pl;
+                        return {
+                            ...pl,
+                            battlefield: pl.battlefield.map(c =>
+                                c.id === randomCreature.id
+                                    ? { ...c, shieldCounters: c.shieldCounters + 1 }
+                                    : c
+                            )
+                        };
+                    });
+                    
+                    addLog(`🛡️ Shield counter applied to ${randomCreature.name}!`);
+                }
             } else {
                 updatedPlayers = state.players.map(p => {
                     if (p.id !== 'player1') return p;
@@ -1357,6 +1413,180 @@ export const useGameStore = create<GameStore>((set, get) => ({
             // Deduct gold from player1
             const finalPlayers = updatedPlayers.map(p => 
                 p.id === 'player1' ? { ...p, gold: p.gold - cost } : p
+            );
+
+            return { players: finalPlayers };
+        });
+    },
+
+    performAIShopPurchases: () => {
+        const { players, addLog } = get();
+        const aiPlayer = players.find(p => p.id === 'player2');
+        
+        if (!aiPlayer || aiPlayer.gold < 24) return; // 24 is cheapest item
+
+        // Define shop items with their costs and IDs
+        const shopItems = [
+            { id: 'plus_counter', cost: 24, category: 'quick', priority: 3 },
+            { id: 'life_gain', cost: 32, category: 'quick', priority: 2 },
+            { id: 'Flying', cost: 56, category: 'premium', priority: 5 },
+            { id: 'Vigilance', cost: 52, category: 'premium', priority: 4 },
+            { id: 'Trample', cost: 60, category: 'premium', priority: 5 },
+            { id: 'Lifelink', cost: 60, category: 'premium', priority: 6 },
+            { id: 'minus_counter', cost: 64, category: 'quick', priority: 7 },
+            { id: 'Deathtouch', cost: 64, category: 'premium', priority: 6 },
+            { id: 'First Strike', cost: 68, category: 'premium', priority: 5 },
+            { id: 'Double Strike', cost: 72, category: 'premium', priority: 8 },
+            { id: 'spawn_creature', cost: 80, category: 'quick', priority: 4 },
+            { id: 'shield_counter', cost: 85, category: 'premium', priority: 7 }
+        ];
+
+        // Filter affordable items
+        const affordable = shopItems.filter(item => item.cost <= aiPlayer.gold);
+        if (affordable.length === 0) return;
+
+        // AI strategy: Prefer higher priority items, but add some randomness
+        const sorted = affordable.sort((a, b) => b.priority - a.priority);
+        
+        // 70% chance to pick top priority, 30% chance to pick any affordable
+        const selectedItem = Math.random() < 0.7 
+            ? sorted[0] 
+            : affordable[Math.floor(Math.random() * affordable.length)];
+
+        // Process the purchase for AI (player2)
+        set(state => {
+            let updatedPlayers = [...state.players];
+            
+            if (selectedItem.id === 'spawn_creature') {
+                // Spawn a random creature for player2
+                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                const newCreature = {
+                    ...randomCard,
+                    id: `player2-creature-${Date.now()}-${Math.random()}`,
+                    controllerId: 'player2',
+                    ownerId: 'player2',
+                    tapped: false,
+                    damageTaken: 0,
+                    plusOneCounters: 0,
+                    minusOneCounters: 0,
+                    summoningSickness: true,
+                    shieldCounters: 0
+                };
+                
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player2') return p;
+                    return {
+                        ...p,
+                        battlefield: [...p.battlefield, newCreature]
+                    };
+                });
+                
+                addLog(`🤖 AI summoned ${newCreature.name}!`);
+            } else if (selectedItem.id === 'plus_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player2')?.battlefield || [];
+                
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player2') return pl;
+                        
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return { ...c, plusOneCounters: c.plusOneCounters + 1 };
+                            }
+                            return c;
+                        });
+                        
+                        return { ...pl, battlefield: updatedBattlefield };
+                    });
+                    
+                    addLog(`🤖 AI granted +1/+1 counter to ${randomCreature.name}!`);
+                }
+            } else if (selectedItem.id === 'minus_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player1')?.battlefield || [];
+                
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player1') return pl;
+                        
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return { ...c, minusOneCounters: c.minusOneCounters + 1 };
+                            }
+                            return c;
+                        }).filter(c => {
+                            const baseToughness = parseInt(c.toughness || '0');
+                            const netToughness = baseToughness + (c.plusOneCounters || 0) - (c.minusOneCounters || 0);
+                            return netToughness > 0;
+                        });
+                        
+                        return { ...pl, battlefield: updatedBattlefield };
+                    });
+                    
+                    addLog(`🤖 AI placed -1/-1 counter on your ${randomCreature.name}!`);
+                }
+            } else if (selectedItem.id === 'life_gain') {
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player2') return p;
+                    return { ...p, life: p.life + 2 };
+                });
+                addLog(`🤖 AI gained 2 life!`);
+            } else if (selectedItem.id === 'shield_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player2')?.battlefield || [];
+                
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player2') return pl;
+                        
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return { ...c, shieldCounters: c.shieldCounters + 1 };
+                            }
+                            return c;
+                        });
+                        
+                        return { ...pl, battlefield: updatedBattlefield };
+                    });
+                    
+                    addLog(`🤖 AI granted shield counter to ${randomCreature.name}!`);
+                }
+            } else if (['Flying', 'Trample', 'Deathtouch', 'First Strike', 'Lifelink', 'Vigilance', 'Double Strike'].includes(selectedItem.id)) {
+                const targetCreatures = state.players.find(pl => pl.id === 'player2')?.battlefield || [];
+                
+                if (targetCreatures.length > 0) {
+                    const eligibleCreatures = targetCreatures.filter(c => 
+                        !c.keywords?.some(k => k.toLowerCase() === selectedItem.id.toLowerCase())
+                    );
+                    
+                    if (eligibleCreatures.length > 0) {
+                        const randomCreature = eligibleCreatures[Math.floor(Math.random() * eligibleCreatures.length)];
+                        
+                        updatedPlayers = state.players.map(p => {
+                            if (p.id !== 'player2') return p;
+                            
+                            const newBattlefield = p.battlefield.map(c => {
+                                if (c.id === randomCreature.id) {
+                                    return {
+                                        ...c,
+                                        keywords: [...c.keywords, selectedItem.id]
+                                    };
+                                }
+                                return c;
+                            });
+                            
+                            return { ...p, battlefield: newBattlefield };
+                        });
+                        
+                        addLog(`🤖 AI granted ${selectedItem.id} to ${randomCreature.name}!`);
+                    }
+                }
+            }
+
+            // Deduct gold from player2
+            const finalPlayers = updatedPlayers.map(p => 
+                p.id === 'player2' ? { ...p, gold: p.gold - selectedItem.cost } : p
             );
 
             return { players: finalPlayers };

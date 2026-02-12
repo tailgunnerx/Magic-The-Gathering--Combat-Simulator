@@ -20,6 +20,7 @@ export interface Card {
     plusOneCounters: number;
     minusOneCounters: number;
     summoningSickness: boolean;
+    shieldCounters: number;
 }
 
 export interface Player {
@@ -109,6 +110,7 @@ export interface GameState {
     getCombatHints: () => string[];
     toggleShop: () => void;
     purchaseUpgrade: (upgrade: string, cost: number) => void;
+    performAIShopPurchases: () => void;
     openTurnOrderModal: () => void;
     startBattle: (startingPlayer: 'player1' | 'player2') => void;
 

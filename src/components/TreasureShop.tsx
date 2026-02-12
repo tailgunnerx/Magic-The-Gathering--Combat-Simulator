@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet, Heart, Eye, Plus, Swords, HeartPulse, Dices } from 'lucide-react';
+import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet, Heart, Eye, Plus, Swords, HeartPulse, Dices, ShieldCheck } from 'lucide-react';
 
 interface ShopItem {
     id: string;
@@ -90,6 +90,14 @@ const SHOP_ITEMS: ShopItem[] = [
         description: 'Grant Double Strike to a random creature you control',
         cost: 72,
         icon: <Swords className="text-red-500" />,
+        category: 'big'
+    },
+    {
+        id: 'shield_counter',
+        name: 'Shield Counter',
+        description: 'Grant a Shield Counter to a random creature you control',
+        cost: 85,
+        icon: <ShieldCheck className="text-cyan-400" />,
         category: 'big'
     },
     {
