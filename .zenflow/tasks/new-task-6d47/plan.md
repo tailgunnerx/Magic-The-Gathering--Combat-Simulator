@@ -207,6 +207,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 1.6: Advanced Options Panels
+<!-- chat-id: 0d2c257a-8d65-4f23-9c9c-0d82552e10ce -->
 
 **Goal**: Modernize the 11 option tabs into searchable, organized panels
 
@@ -518,29 +519,77 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 - FAQ answers common questions
 - Roadmap is updated with learnings
 
-### [ ] Step: step5/newdev
-<!-- chat-id: 34cd0af4-f8cf-4f29-bce9-35e441d2a4e9 -->
-<!-- agent: zencoder-default -->
 
-5: Download Monitor & Progress UI
-Goal: Real-time download monitoring with beautiful progress visualization
+### [ ] Step: 5: new agent
+<!-- chat-id: 232f61f4-fba8-492b-b142-a366892e91b8 -->
+<!-- agent: gemini-gemini-1-5-flash -->
 
-Tasks:
+# Spec and build
 
-Create download progress card component
-Implement WebSocket connection for real-time updates
-Build progress bars with animation (framer-motion)
-Add download statistics (speed, ETA, files)
-Create pause/resume/stop controls
-Implement log viewer with filtering
-Add download queue management
-Create mini progress indicator for sidebar
-Handle connection loss and reconnection
-Write tests for WebSocket handlers
-Verification:
+## Configuration
+- **Artifacts Path**: {@artifacts_path} → `.zenflow/tasks/{task_id}`
 
-Progress updates in real-time without lag
-Controls (pause/resume/stop) work correctly
-Log viewer filters by level (debug/info/error)
-WebSocket reconnects on connection loss
-Manual download test shows accurate progress
+---
+
+## Agent Instructions
+
+Ask the user questions when anything is unclear or needs their input. This includes:
+- Ambiguous or incomplete requirements
+- Technical decisions that affect architecture or user experience
+- Trade-offs that require business context
+
+Do not make assumptions on important decisions — get clarification first.
+
+---
+
+## Workflow Steps
+
+### [x] Step: Technical Specification
+
+**Status**: COMPLETED
+
+**Complexity Assessment**: HARD
+
+Technical specification has been created at `.zenflow/tasks/new-task-6d47/spec.md` documenting:
+- Current HTTrack v3.49.6 architecture (C-based, web GUI)
+- Modern competitor feature analysis
+- Proposed React + Vite frontend with Tailwind CSS
+- Tor/.onion support implementation plan
+- JavaScript rendering capabilities
+- API design and integration architecture
+- Security considerations and risk assessment
+
+---
+
+## Implementation Steps
+
+### [x] Phase 1.1: Project Infrastructure Setup
+<!-- chat-id: b0794c28-786b-4c01-a71d-e3249a99cbbd -->
+
+**Goal**: Set up the modern frontend development environment and build integration
+
+**Tasks**:
+- Create `gui/` directory for modern React frontend
+- Initialize Vite + React + TypeScript project
+- Set up Tailwind CSS and shadcn/ui
+- Configure build output to integrate with C backend
+- Add npm scripts to package.json
+- Create .gitignore for node_modules
+- Update main configure.ac to detect Node.js and build GUI
+- Document build process in README
+
+**Verification**:
+- `npm run build` produces optimized bundle < 500KB gzipped
+- Built assets are accessible from C HTTP server
+- Build works on Windows, Linux, and macOS
+
+---
+
+### [x] Phase 1.2: C Backend API Foundation
+<!-- chat-id: 5d0e5b16-8e83-4189-82e6-57845d7f7e26 -->
+
+**Goal**: Extend the HTTP server with RESTful API and WebSocket support
+
+**Tasks**:
+- ✅ Add cJSON library for JSON serialization (htsjson.c/h)
+- ✅ Create `src/htsapi.c` and
