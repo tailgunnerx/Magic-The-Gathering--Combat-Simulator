@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet, Heart, Eye, Plus, Swords, HeartPulse } from 'lucide-react';
+import { X, Coins, Sparkles, Skull, Shield, Wind, Zap, Droplet, Heart, Eye, Plus, Swords, HeartPulse, Dices } from 'lucide-react';
 
 interface ShopItem {
     id: string;
@@ -99,6 +99,14 @@ const SHOP_ITEMS: ShopItem[] = [
         cost: 32,
         icon: <HeartPulse className="text-rose-400" />,
         category: 'small'
+    },
+    {
+        id: 'gamble_spawn',
+        name: '🎲 High Risk Gamble',
+        description: 'Spawn opponent creature, earn 0-200 gold!',
+        cost: 0,
+        icon: <Dices className="text-amber-400" />,
+        category: 'small'
     }
 ];
 
@@ -110,7 +118,9 @@ export const TreasureShop = () => {
     if (!showShop) return null;
 
     const handlePurchase = (item: ShopItem) => {
-        if (!isPlayerTurn) return;
+        // Quick Boosts can be used anytime (like instants)
+        // Premium Abilities only during your turn
+        if (item.category === 'big' && !isPlayerTurn) return;
         purchaseUpgrade(item.id, item.cost);
     };
 
@@ -192,8 +202,9 @@ export const TreasureShop = () => {
 
 const ShopItemCard = ({ item, playerGold, onPurchase, isPlayerTurn }: { item: ShopItem, playerGold: number, onPurchase: (item: ShopItem) => void, isPlayerTurn: boolean }) => {
     const canAfford = playerGold >= item.cost;
-    const canPurchase = canAfford && isPlayerTurn;
     const isPremium = item.category === 'big';
+    // Quick Boosts can be used anytime, Premium Abilities only during player's turn
+    const canPurchase = canAfford && (item.category === 'small' || isPlayerTurn);
 
     return (
         <motion.button
@@ -233,14 +244,14 @@ const ShopItemCard = ({ item, playerGold, onPurchase, isPlayerTurn }: { item: Sh
                 </div>
             </div>
 
-            {!isPlayerTurn && (
+            {!isPlayerTurn && isPremium && (
                 <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-orange-950/60 backdrop-blur-sm flex items-center justify-center rounded-xl border-2 border-orange-900/50">
                     <div className="bg-orange-900/80 px-3 py-2 rounded-lg border border-orange-500/50 shadow-lg">
                         <span className="text-orange-200 font-bold text-xs uppercase tracking-wide">⏳ Wait Your Turn</span>
                     </div>
                 </div>
             )}
-            {isPlayerTurn && !canAfford && (
+            {!canAfford && (
                 <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-red-950/60 backdrop-blur-sm flex items-center justify-center rounded-xl border-2 border-red-900/50">
                     <div className="bg-red-900/80 px-3 py-2 rounded-lg border border-red-500/50 shadow-lg">
                         <span className="text-red-200 font-bold text-xs uppercase tracking-wide">🔒 Not Enough Gold</span>

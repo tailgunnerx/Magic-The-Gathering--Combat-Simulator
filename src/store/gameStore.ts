@@ -4,7 +4,7 @@ import type { GameState, Player, Phase, CombatPhaseStep, Card, CombatOutcome, Da
 const INITIAL_LIFE = 40;
 
 // Card Pool - ~20 varied creatures
-const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters'>[] = [
+const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters' | 'summoningSickness'>[] = [
     { name: "Serra Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, Vigilance", power: "4", toughness: "4", colors: ["W"], keywords: ["Flying", "Vigilance"], imageUrl: "https://api.scryfall.com/cards/named?exact=Serra+Angel&format=image&version=normal" },
     { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
     { name: "Elite Vanguard", manaCost: "{W}", typeLine: "Creature — Human Soldier", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Elite+Vanguard&format=image&version=normal" },
@@ -232,7 +232,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     tapped: false,
                     damageTaken: 0,
                     plusOneCounters: 0,
-                    minusOneCounters: 0
+                    minusOneCounters: 0,
+                    summoningSickness: true
                 }));
 
                 return {
@@ -1016,7 +1017,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
                         // Only untap the incoming player's permanents
                         tapped: p.id === nextActivePlayerId ? false : c.tapped,
                         // ALL creatures have damage removed during cleanup step (MTG rule 514.2)
-                        damageTaken: 0
+                        damageTaken: 0,
+                        // Clear summoning sickness for active player's creatures
+                        summoningSickness: p.id === nextActivePlayerId ? false : c.summoningSickness
                     }))
                 }))
             }));
@@ -1148,6 +1151,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return;
         }
 
+        if (card.summoningSickness && !card.keywords?.includes('Haste')) {
+            addLog(`${card.name} has summoning sickness and cannot attack.`);
+            return;
+        }
+
         set({ attackers: [...attackers, cardId] });
     },
 
@@ -1229,7 +1237,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     tapped: false,
                     damageTaken: 0,
                     plusOneCounters: 0,
-                    minusOneCounters: 0
+                    minusOneCounters: 0,
+                    summoningSickness: true
                 };
                 
                 updatedPlayers = state.players.map(p => {
@@ -1285,6 +1294,42 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     p.id === 'player1' ? { ...p, life: p.life + 2 } : p
                 );
                 addLog(`💖 You gained 2 life!`);
+            } else if (upgrade === 'gamble_spawn') {
+                // Spawn a creature for opponent with summoning sickness
+                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                const newCreature = {
+                    ...randomCard,
+                    id: `player2-creature-${Date.now()}-${Math.random()}`,
+                    controllerId: 'player2',
+                    ownerId: 'player2',
+                    tapped: false,
+                    damageTaken: 0,
+                    plusOneCounters: 0,
+                    minusOneCounters: 0,
+                    summoningSickness: true
+                };
+                
+                // Random gold between 0 and 200
+                const goldEarned = Math.floor(Math.random() * 201);
+                
+                updatedPlayers = state.players.map(p => {
+                    if (p.id === 'player2') {
+                        return {
+                            ...p,
+                            battlefield: [...p.battlefield, newCreature]
+                        };
+                    } else if (p.id === 'player1') {
+                        return {
+                            ...p,
+                            gold: p.gold + goldEarned
+                        };
+                    }
+                    return p;
+                });
+                
+                addLog(`🎲 GAMBLE! Spawned ${newCreature.name} for opponent - you earned ${goldEarned} gold!`);
+                // No cost deduction since it's free, but we still return here to skip the final gold deduction
+                return { players: updatedPlayers };
             } else {
                 updatedPlayers = state.players.map(p => {
                     if (p.id !== 'player1') return p;

@@ -91,6 +91,17 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                     </div>
                 )}
 
+                {/* Summoning Sickness Indicator */}
+                {card.summoningSickness && !card.keywords?.includes('Haste') && (
+                    <motion.div
+                        initial={{ scale: 0, rotate: -10 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        className="absolute top-2 right-2 bg-yellow-500 border-2 border-yellow-300 text-black font-black px-2 py-1 rounded-lg shadow-lg z-30 text-[10px] uppercase tracking-wide"
+                    >
+                        😴 Summoning Sickness
+                    </motion.div>
+                )}
+
                 {/* +1/+1 Counter Indicator */}
                 {(card.plusOneCounters || 0) > 0 && (
                     <motion.div

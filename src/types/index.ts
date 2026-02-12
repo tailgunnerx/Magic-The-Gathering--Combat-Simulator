@@ -19,6 +19,7 @@ export interface Card {
     ownerId: string;
     plusOneCounters: number;
     minusOneCounters: number;
+    summoningSickness: boolean;
 }
 
 export interface Player {
