@@ -371,29 +371,28 @@ Technical specification has been created at `.zenflow/tasks/new-task-6d47/spec.m
 
 ---
 
-### [ ] Phase 4.2: Cloud Storage Integration
+### [ ] Phase 4.2: Cloud Storage Scraping Support
 
-**Goal**: Enable automatic upload to cloud storage providers
+**Goal**: Add support for downloading from cloud storage providers (S3, Azure Blob, GCS)
 
 **Tasks**:
-- Design cloud storage plugin interface
-- Implement S3 storage plugin
-- Add cloud configuration UI
-- Implement streaming upload during download
-- Add progress indicator for uploads
-- Implement retry logic for failed uploads
-- Add Azure and GCS plugins
-- Create credential management (OS keyring)
-- Write integration tests with mock storage
-- Document cloud setup for each provider
+- Add S3 bucket crawling support (public buckets)
+- Add Azure Blob container support
+- Add Google Cloud Storage bucket support
+- Implement cloud storage authentication (API keys)
+- Handle cloud-specific URL patterns
+- Add cloud storage file listing
+- Implement pagination for large buckets
+- Create cloud storage protocol handlers
+- Write tests for cloud storage downloads
+- Document cloud storage scraping
 
 **Verification**:
-- Files upload to S3 successfully
-- Credentials stored securely
-- Upload progress shows accurately
-- Failed uploads retry correctly
-- Integration tests pass
-- Documentation is clear
+- Can download from public S3 buckets
+- Authentication works for private buckets
+- Handles large buckets efficiently
+- Tests verify cloud downloads
+- Documentation explains usage
 
 ---
 
