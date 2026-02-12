@@ -16,7 +16,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'plus_counter',
         name: '+1/+1 Counter',
         description: 'Grant a random creature you control +1/+1',
-        cost: 30,
+        cost: 24,
         icon: <Sparkles className="text-emerald-400" />,
         category: 'small'
     },
@@ -24,7 +24,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'minus_counter',
         name: '-1/-1 Counter',
         description: 'Give a random opponent creature -1/-1',
-        cost: 80,
+        cost: 64,
         icon: <Skull className="text-purple-400" />,
         category: 'small'
     },
@@ -32,7 +32,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'spawn_creature',
         name: 'Summon Creature',
         description: 'Summon a random creature to your battlefield',
-        cost: 100,
+        cost: 80,
         icon: <Plus className="text-cyan-400" />,
         category: 'small'
     },
@@ -40,7 +40,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'Deathtouch',
         name: 'Deathtouch',
         description: 'Grant Deathtouch to a random creature you control',
-        cost: 80,
+        cost: 64,
         icon: <Droplet className="text-purple-600" />,
         category: 'big'
     },
@@ -48,7 +48,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'Flying',
         name: 'Flying',
         description: 'Grant Flying to a random creature you control',
-        cost: 70,
+        cost: 56,
         icon: <Wind className="text-sky-500" />,
         category: 'big'
     },
@@ -56,7 +56,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'Trample',
         name: 'Trample',
         description: 'Grant Trample to a random creature you control',
-        cost: 75,
+        cost: 60,
         icon: <Shield className="text-green-600" />,
         category: 'big'
     },
@@ -64,7 +64,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'First Strike',
         name: 'First Strike',
         description: 'Grant First Strike to a random creature you control',
-        cost: 85,
+        cost: 68,
         icon: <Zap className="text-amber-400" />,
         category: 'big'
     },
@@ -72,7 +72,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'Lifelink',
         name: 'Lifelink',
         description: 'Grant Lifelink to a random creature you control',
-        cost: 75,
+        cost: 60,
         icon: <Heart className="text-pink-500" />,
         category: 'big'
     },
@@ -80,7 +80,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'Vigilance',
         name: 'Vigilance',
         description: 'Grant Vigilance to a random creature you control',
-        cost: 65,
+        cost: 52,
         icon: <Eye className="text-slate-300" />,
         category: 'big'
     },
@@ -88,7 +88,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'Double Strike',
         name: 'Double Strike',
         description: 'Grant Double Strike to a random creature you control',
-        cost: 90,
+        cost: 72,
         icon: <Swords className="text-red-500" />,
         category: 'big'
     },
@@ -96,7 +96,7 @@ const SHOP_ITEMS: ShopItem[] = [
         id: 'life_gain',
         name: '+2 Life',
         description: 'Gain 2 life points',
-        cost: 40,
+        cost: 32,
         icon: <HeartPulse className="text-rose-400" />,
         category: 'small'
     }
