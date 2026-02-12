@@ -38,6 +38,7 @@ Technical specification has been created at `.zenflow/tasks/new-task-6d47/spec.m
 ## Implementation Steps
 
 ### [ ] Phase 1.1: Project Infrastructure Setup
+<!-- chat-id: b0794c28-786b-4c01-a71d-e3249a99cbbd -->
 
 **Goal**: Set up the modern frontend development environment and build integration
 
