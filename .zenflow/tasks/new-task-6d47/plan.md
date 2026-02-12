@@ -60,6 +60,7 @@ Technical specification has been created at `.zenflow/tasks/new-task-6d47/spec.m
 ---
 
 ### [ ] Phase 1.2: C Backend API Foundation
+<!-- chat-id: 5d0e5b16-8e83-4189-82e6-57845d7f7e26 -->
 
 **Goal**: Extend the HTTP server with RESTful API and WebSocket support
 
