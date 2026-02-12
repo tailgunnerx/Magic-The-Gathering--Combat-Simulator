@@ -85,6 +85,7 @@ Technical specification has been created at `.zenflow/tasks/new-task-6d47/spec.m
 ---
 
 ### [ ] Phase 1.3: Modern GUI Core Components
+<!-- chat-id: 32c07345-f790-406d-abb6-284d327b5697 -->
 
 **Goal**: Build the foundational UI components and routing
 
