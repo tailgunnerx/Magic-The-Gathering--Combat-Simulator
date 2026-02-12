@@ -775,7 +775,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const p2Lost = p2?.battlefield.filter(c => outcome.deaths.includes(c.id)).length || 0;
 
         // Calculate gold earned from killing opponent creatures
-        const goldPerKill = 5;
+        const goldPerKill = 25;
         const goldEarned = p2Lost * goldPerKill;
 
         set({

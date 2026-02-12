@@ -29,7 +29,7 @@ Earn gold through gameplay and spend it in the treasure shop to gain powerful ad
 
 **Ways to Earn Gold:**
 - **+10 Gold** for each correct answer in combat quiz
-- **+5 Gold** for each opponent creature you destroy
+- **+25 Gold** for each opponent creature you destroy
 
 **Treasure Shop** (only available during your turn):
 
