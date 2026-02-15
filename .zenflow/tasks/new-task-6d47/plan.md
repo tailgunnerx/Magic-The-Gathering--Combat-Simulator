@@ -271,6 +271,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 2.1: SOCKS5 Proxy Implementation
+<!-- chat-id: d22437b4-70e1-4cfd-9fc9-1d50e7cf95d2 -->
 
 **Goal**: Add SOCKS5 protocol support for Tor connectivity
 
