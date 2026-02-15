@@ -243,6 +243,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 1.7: Integration & Polish
+<!-- chat-id: 98a6961a-8534-4576-a7af-ccd6f0053abf -->
 
 **Goal**: Connect all frontend pieces, polish UX, and ensure quality
 
