@@ -353,6 +353,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 3.1: JavaScript Rendering - Plugin Architecture
+<!-- chat-id: 4595f2e1-52fe-4e64-8e50-9a10e101db32 -->
 
 **Goal**: Create plugin system for optional JS rendering
 
