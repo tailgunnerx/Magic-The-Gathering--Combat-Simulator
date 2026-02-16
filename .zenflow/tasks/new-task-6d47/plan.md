@@ -298,6 +298,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 2.2: Tor Integration & .onion Support
+<!-- chat-id: 2830bd4c-7d6d-4520-8009-3588f0fd5659 -->
 
 **Goal**: Enable downloading from .onion hidden services
 
@@ -327,6 +328,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 2.3: Tor Documentation & Safety
+<!-- chat-id: 3d8aae69-afa3-420e-9e79-c50c8ddf9538 -->
 
 **Goal**: Ensure safe and legal use of Tor features
 
