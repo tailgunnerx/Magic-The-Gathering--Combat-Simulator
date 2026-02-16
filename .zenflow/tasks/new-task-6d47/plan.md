@@ -376,6 +376,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 3.2: Headless Browser Plugin (Optional)
+<!-- chat-id: 7ae5cad0-fbc1-4ad4-bce0-c3e2cd0ca410 -->
 
 **Goal**: Implement JavaScript rendering via headless browser
 
