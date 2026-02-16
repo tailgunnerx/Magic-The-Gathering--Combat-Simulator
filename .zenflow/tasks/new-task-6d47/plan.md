@@ -403,6 +403,7 @@ The wizard provides an intuitive, step-by-step interface for creating HTTrack pr
 ---
 
 ### [ ] Phase 4.1: WARC Archive Format Support
+<!-- chat-id: 0c17c6bc-171f-4140-beff-43aa4d961cde -->
 
 **Goal**: Add industry-standard WARC format export
 
