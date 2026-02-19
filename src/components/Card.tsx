@@ -28,8 +28,10 @@ const KEYWORD_COLORS: Record<string, string> = {
 
 export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLocked, blockIndicatorColor }: CardProps) => {
     const isTapped = card.tapped;
-    const power = parseInt(card.power || '0');
-    const toughness = parseInt(card.toughness || '0');
+    const basePower = parseInt(card.power || '0');
+    const baseToughness = parseInt(card.toughness || '0');
+    const power = basePower + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
+    const toughness = baseToughness + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
     const currentToughness = toughness - card.damageTaken;
 
     return (
@@ -87,6 +89,40 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                             </span>
                         ))}
                     </div>
+                )}
+
+                {/* Summoning Sickness Indicator */}
+                {card.summoningSickness && !card.keywords?.includes('Haste') && (
+                    <motion.div
+                        initial={{ scale: 0, rotate: -10 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        className="absolute top-2 right-2 bg-yellow-500 border-2 border-yellow-300 text-black font-black px-2 py-1 rounded-lg shadow-lg z-30 text-[10px] uppercase tracking-wide"
+                    >
+                        😴 Summoning Sickness
+                    </motion.div>
+                )}
+
+                {/* +1/+1 Counter Indicator */}
+                {(card.plusOneCounters || 0) > 0 && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute bottom-2 left-2 bg-emerald-600 border-2 border-white text-white font-bold px-2 py-1 rounded-lg shadow-lg z-30"
+                    >
+                        <span className="text-sm">+{card.plusOneCounters}/+{card.plusOneCounters}</span>
+                    </motion.div>
+                )}
+
+                {/* Shield Counter Indicator */}
+                {(card.shieldCounters || 0) > 0 && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        className="absolute top-2 right-2 bg-cyan-500 border-2 border-white text-white font-bold px-2 py-1 rounded-full shadow-lg z-30 flex items-center gap-1"
+                    >
+                        <span className="text-xs">🛡️</span>
+                        <span className="text-sm">{card.shieldCounters}</span>
+                    </motion.div>
                 )}
 
                 {/* Damage / Health Indicator */}

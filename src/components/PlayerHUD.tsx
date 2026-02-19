@@ -1,5 +1,6 @@
 import type { Player } from '../types';
-import { Heart, Skull, Shield } from 'lucide-react';
+import { Heart, Skull, Shield, Coins } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface PlayerHUDProps {
     player: Player;
@@ -24,9 +25,26 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                     </div>
                 )}
 
+                {player.id === 'player1' && (
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.1, 1],
+                            filter: ['drop-shadow(0 0 0px rgba(234, 179, 8, 0))', 'drop-shadow(0 0 10px rgba(234, 179, 8, 0.8))', 'drop-shadow(0 0 0px rgba(234, 179, 8, 0))']
+                        }}
+                        transition={{
+                            duration: 2,
+                            repeat: Infinity,
+                            repeatType: 'loop'
+                        }}
+                        className="flex items-center gap-2 text-yellow-500"
+                    >
+                        <Coins size={24} fill="currentColor" />
+                        <span className="text-2xl font-bold">{player.gold}</span>
+                    </motion.div>
+                )}
+
                 <div className="flex items-center gap-2 text-blue-400">
                     <Shield size={20} />
-                    {/* Abstract representation of library size or something else could go here */}
                     <span className="text-sm">{player.library.length} cards</span>
                 </div>
             </div>

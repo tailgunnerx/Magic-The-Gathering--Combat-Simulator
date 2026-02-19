@@ -7,8 +7,10 @@ import { CombatQuizModal } from './CombatQuizModal';
 import { CombatSummaryModal } from './CombatSummaryModal';
 import { TurnBanner } from './TurnBanner';
 import { VictoryModal } from './VictoryModal';
+import { TreasureShop } from './TreasureShop';
 import { StartBattleModal } from './StartBattleModal';
 import { Shuffle, GraduationCap } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export const GameInterface = () => {
     const {
@@ -18,7 +20,8 @@ export const GameInterface = () => {
         combatStep,
         shuffleBoard,
         quizMode,
-        toggleQuizMode
+        toggleQuizMode,
+        toggleShop
     } = useGameStore();
 
     const player1 = players[0];
@@ -50,15 +53,13 @@ export const GameInterface = () => {
                         <GraduationCap size={18} />
                         {quizMode ? "Quiz Mode: ON" : "Quiz Mode: OFF"}
                     </button>
-
-
                     <div className="flex flex-col">
                         <span className="text-[10px] text-slate-500 font-bold uppercase">Active Player</span>
                         <span className={`font-bold ${activePlayerId === player1.id ? "text-green-400" : "text-red-400"}`}>
                             {players.find(p => p.id === activePlayerId)?.name}
                         </span>
                     </div>
-                </div>
+                </div >
 
                 <div className="flex items-center gap-6">
                     <div className="flex flex-col items-end">
@@ -74,22 +75,23 @@ export const GameInterface = () => {
                         </div>
                     </div>
                 </div>
-            </div>
+            </div >
 
             {/* Main Content Area (Sidebar + Game Board) */}
-            <div className="flex-grow flex overflow-hidden relative">
+            < div className="flex-grow flex overflow-hidden relative" >
 
                 {/* Sidebar: Combat Log */}
-                <CombatLog />
+                < CombatLog />
 
                 {/* Right Side: Game Board & Instructions */}
-                <div className="flex-grow flex flex-col relative overflow-hidden">
+                < div className="flex-grow flex flex-col relative overflow-hidden" >
 
                     {/* Combat Wizard Layer - Floating Guide */}
-                    <TurnBanner />
+                    < TurnBanner />
                     <CombatWizard />
                     <CombatQuizModal />
                     <CombatSummaryModal />
+                    <TreasureShop />
                     <StartBattleModal />
 
                     {/* Main Game Plane */}
@@ -124,10 +126,164 @@ export const GameInterface = () => {
                             <div className="absolute bottom-4 left-4 z-20">
                                 <PlayerHUD player={player1} isActive={activePlayerId === player1.id} />
                             </div>
+
+                            {/* Treasure Chest Button */}
+                            <div className="absolute bottom-4 right-4 z-20">
+                                <div className="relative">
+                                    {/* Rotating Sunray Background Layer 1 */}
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{
+                                            duration: 8,
+                                            repeat: Infinity,
+                                            ease: 'linear'
+                                        }}
+                                        className="absolute inset-0 -m-8"
+                                        style={{
+                                            background: 'conic-gradient(from 0deg, transparent 0%, rgba(251, 191, 36, 0.3) 10%, transparent 20%, transparent 30%, rgba(251, 191, 36, 0.3) 40%, transparent 50%, transparent 60%, rgba(251, 191, 36, 0.3) 70%, transparent 80%, transparent 90%, rgba(251, 191, 36, 0.3) 100%)',
+                                            filter: 'blur(8px)'
+                                        }}
+                                    />
+
+                                    {/* Rotating Sunray Background Layer 2 */}
+                                    <motion.div
+                                        animate={{ rotate: -360 }}
+                                        transition={{
+                                            duration: 12,
+                                            repeat: Infinity,
+                                            ease: 'linear'
+                                        }}
+                                        className="absolute inset-0 -m-12"
+                                        style={{
+                                            background: 'conic-gradient(from 45deg, transparent 0%, rgba(234, 179, 8, 0.4) 8%, transparent 16%, transparent 24%, rgba(234, 179, 8, 0.4) 32%, transparent 40%, transparent 48%, rgba(234, 179, 8, 0.4) 56%, transparent 64%, transparent 72%, rgba(234, 179, 8, 0.4) 80%, transparent 88%)',
+                                            filter: 'blur(12px)'
+                                        }}
+                                    />
+
+                                    {/* Pulsing Outer Glow */}
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.3, 1],
+                                            opacity: [0.3, 0.6, 0.3]
+                                        }}
+                                        transition={{
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            ease: 'easeInOut'
+                                        }}
+                                        className="absolute inset-0 -m-6 rounded-full"
+                                        style={{
+                                            background: 'radial-gradient(circle, rgba(251, 191, 36, 0.6) 0%, transparent 70%)',
+                                            filter: 'blur(20px)'
+                                        }}
+                                    />
+
+                                    {/* Sparkle Effects */}
+                                    {[...Array(6)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            animate={{
+                                                scale: [0, 1, 0],
+                                                opacity: [0, 1, 0]
+                                            }}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Infinity,
+                                                delay: i * 0.3,
+                                                ease: 'easeInOut'
+                                            }}
+                                            className="absolute w-2 h-2 bg-yellow-300 rounded-full"
+                                            style={{
+                                                top: `${20 + Math.sin(i * 60 * Math.PI / 180) * 40}%`,
+                                                left: `${50 + Math.cos(i * 60 * Math.PI / 180) * 50}%`,
+                                                boxShadow: '0 0 10px rgba(251, 191, 36, 0.8)'
+                                            }}
+                                        />
+                                    ))}
+
+                                    <motion.button
+                                        onClick={toggleShop}
+                                        animate={{
+                                            boxShadow: [
+                                                '0 0 30px rgba(217, 119, 6, 0.8), 0 0 60px rgba(251, 191, 36, 0.6), 0 0 90px rgba(234, 179, 8, 0.4)',
+                                                '0 0 50px rgba(217, 119, 6, 1), 0 0 80px rgba(251, 191, 36, 0.8), 0 0 120px rgba(234, 179, 8, 0.6)',
+                                                '0 0 30px rgba(217, 119, 6, 0.8), 0 0 60px rgba(251, 191, 36, 0.6), 0 0 90px rgba(234, 179, 8, 0.4)'
+                                            ]
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            repeatType: 'loop'
+                                        }}
+                                        whileHover={{
+                                            scale: 1.1,
+                                            boxShadow: '0 0 60px rgba(217, 119, 6, 1), 0 0 100px rgba(251, 191, 36, 1), 0 0 150px rgba(234, 179, 8, 0.8)'
+                                        }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="group relative bg-gradient-to-br from-amber-500 via-yellow-400 to-amber-600 hover:from-yellow-300 hover:via-amber-400 hover:to-yellow-500 text-white font-black px-8 py-5 rounded-2xl shadow-2xl transition-all border-4 border-yellow-300 hover:border-yellow-200"
+                                    >
+                                        {/* Animated shine overlay */}
+                                        <motion.div
+                                            animate={{
+                                                x: ['-200%', '200%']
+                                            }}
+                                            transition={{
+                                                duration: 3,
+                                                repeat: Infinity,
+                                                ease: 'linear'
+                                            }}
+                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent overflow-hidden rounded-2xl"
+                                            style={{ width: '50%' }}
+                                        />
+
+                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/gold-scale.png')] opacity-20 rounded-xl"></div>
+
+                                        {/* Inner glow */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/30 via-transparent to-amber-900/30 rounded-xl"></div>
+
+                                        <div className="relative flex items-center gap-3">
+                                            <motion.span
+                                                animate={{
+                                                    scale: [1, 1.2, 1],
+                                                    rotate: [0, 10, -10, 0]
+                                                }}
+                                                transition={{
+                                                    duration: 2,
+                                                    repeat: Infinity,
+                                                    ease: 'easeInOut'
+                                                }}
+                                                className="text-4xl drop-shadow-[0_0_8px_rgba(0,0,0,0.8)]"
+                                            >
+                                                💎
+                                            </motion.span>
+                                            <span className="text-2xl uppercase tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Shop</span>
+                                        </div>
+                                    </motion.button>
+
+                                    {/* NEW Badge - Outside button */}
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.2, 1],
+                                            rotate: [0, 5, -5, 0]
+                                        }}
+                                        transition={{
+                                            duration: 1,
+                                            repeat: Infinity,
+                                            repeatType: 'loop'
+                                        }}
+                                        className="absolute -top-3 -right-3 bg-gradient-to-br from-red-500 to-red-700 text-white text-sm font-black px-3 py-1.5 rounded-full shadow-lg border-2 border-white z-10"
+                                        style={{
+                                            boxShadow: '0 0 20px rgba(239, 68, 68, 0.8)'
+                                        }}
+                                    >
+                                        NEW
+                                    </motion.div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div >
+            </div >
+        </div >
     );
 };

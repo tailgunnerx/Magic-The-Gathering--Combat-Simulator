@@ -4,26 +4,36 @@ import type { GameState, Player, Phase, CombatPhaseStep, Card, CombatOutcome, Da
 const INITIAL_LIFE = 40;
 
 // Card Pool - ~20 varied creatures
-const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken'>[] = [
+const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters' | 'summoningSickness' | 'shieldCounters'>[] = [
     { name: "Serra Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, Vigilance", power: "4", toughness: "4", colors: ["W"], keywords: ["Flying", "Vigilance"], imageUrl: "https://api.scryfall.com/cards/named?exact=Serra+Angel&format=image&version=normal" },
-    { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying, {R}: +1/+0", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
+    { name: "Shivan Dragon", manaCost: "{4}{R}{R}", typeLine: "Creature — Dragon", oracleText: "Flying", power: "5", toughness: "5", colors: ["R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Shivan+Dragon&format=image&version=normal" },
     { name: "Elite Vanguard", manaCost: "{W}", typeLine: "Creature — Human Soldier", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Elite+Vanguard&format=image&version=normal" },
     { name: "Goblin Piker", manaCost: "{1}{R}", typeLine: "Creature — Goblin", oracleText: "", power: "2", toughness: "1", colors: ["R"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Goblin+Piker&format=image&version=normal" },
     { name: "Garruk's Companion", manaCost: "{G}{G}", typeLine: "Creature — Beast", oracleText: "Trample", power: "3", toughness: "2", colors: ["G"], keywords: ["Trample"], imageUrl: "https://api.scryfall.com/cards/named?exact=Garruk%27s+Companion&format=image&version=normal" },
     { name: "Vampire Nighthawk", manaCost: "{1}{B}{B}", typeLine: "Creature — Vampire Shaman", oracleText: "Flying, Deathtouch, Lifelink", power: "2", toughness: "3", colors: ["B"], keywords: ["Flying", "Deathtouch", "Lifelink"], imageUrl: "https://api.scryfall.com/cards/named?exact=Vampire+Nighthawk&format=image&version=normal" },
     { name: "Giant Spider", manaCost: "{3}{G}", typeLine: "Creature — Spider", oracleText: "Reach", power: "2", toughness: "4", colors: ["G"], keywords: ["Reach"], imageUrl: "https://api.scryfall.com/cards/named?exact=Giant+Spider&format=image&version=normal" },
-    { name: "Llanowar Elves", manaCost: "{G}", typeLine: "Creature — Elf Druid", oracleText: "{T}: Add {G}.", power: "1", toughness: "1", colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Llanowar+Elves&format=image&version=normal" },
+    { name: "Llanowar Elves", manaCost: "{G}", typeLine: "Creature — Elf Druid", oracleText: "", power: "1", toughness: "1", colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Llanowar+Elves&format=image&version=normal" },
     { name: "Air Elemental", manaCost: "{3}{U}{U}", typeLine: "Creature — Elemental", oracleText: "Flying", power: "4", toughness: "4", colors: ["U"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Air+Elemental&format=image&version=normal" },
-    { name: "Hypnotic Specter", manaCost: "{1}{B}{B}", typeLine: "Creature — Specter", oracleText: "Flying. Whenever Hypnotic Specter deals damage to an opponent, that player discards a card at random.", power: "2", toughness: "2", colors: ["B"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Hypnotic+Specter&format=image&version=normal" },
+    { name: "Hypnotic Specter", manaCost: "{1}{B}{B}", typeLine: "Creature — Specter", oracleText: "Flying", power: "2", toughness: "2", colors: ["B"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Hypnotic+Specter&format=image&version=normal" },
     { name: "Craw Wurm", manaCost: "{4}{G}{G}", typeLine: "Creature — Wurm", oracleText: "", power: "6", toughness: "4", colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Craw+Wurm&format=image&version=normal" },
     { name: "Savannah Lions", manaCost: "{W}", typeLine: "Creature — Cat", oracleText: "", power: "2", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Savannah+Lions&format=image&version=normal" },
-    { name: "Giant Growth", manaCost: "{G}", typeLine: "Instant", oracleText: "Target creature gets +3/+3 until end of turn.", power: undefined, toughness: undefined, colors: ["G"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Giant+Growth&format=image&version=normal" },
     { name: "Woolly Thoctar", manaCost: "{R}{G}{W}", typeLine: "Creature — Beast", oracleText: "", power: "5", toughness: "4", colors: ["R", "G", "W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Woolly+Thoctar&format=image&version=normal" },
     { name: "Storm Crow", manaCost: "{1}{U}", typeLine: "Creature — Bird", oracleText: "Flying", power: "1", toughness: "2", colors: ["U"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Storm+Crow&format=image&version=normal" },
-    { name: "Doom Blade", manaCost: "{1}{B}", typeLine: "Instant", oracleText: "Destroy target nonblack creature.", power: undefined, toughness: undefined, colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Doom+Blade&format=image&version=normal" },
-    { name: "Dark Confidant", manaCost: "{1}{B}", typeLine: "Creature — Human Wizard", oracleText: "At the beginning of your upkeep, reveal the top card of your library and put that card into your hand. You lose life equal to its mana value.", power: "2", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Dark+Confidant&format=image&version=normal" },
-    { name: "Baneslayer Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, First Strike, Lifelink, Protection from Demons and Dragons", power: "5", toughness: "5", colors: ["W"], keywords: ["Flying", "First Strike", "Lifelink"], imageUrl: "https://api.scryfall.com/cards/named?exact=Baneslayer+Angel&format=image&version=normal" },
-    { name: "Stoneforge Mystic", manaCost: "{1}{W}", typeLine: "Creature — Kor Artificer", oracleText: "Search for Equipment.", power: "1", toughness: "2", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Stoneforge+Mystic&format=image&version=normal" }
+    { name: "Dark Confidant", manaCost: "{1}{B}", typeLine: "Creature — Human Wizard", oracleText: "", power: "2", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Dark+Confidant&format=image&version=normal" },
+    { name: "Baneslayer Angel", manaCost: "{3}{W}{W}", typeLine: "Creature — Angel", oracleText: "Flying, First Strike, Lifelink", power: "5", toughness: "5", colors: ["W"], keywords: ["Flying", "First Strike", "Lifelink"], imageUrl: "https://api.scryfall.com/cards/named?exact=Baneslayer+Angel&format=image&version=normal" },
+    { name: "Stoneforge Mystic", manaCost: "{1}{W}", typeLine: "Creature — Kor Artificer", oracleText: "", power: "1", toughness: "2", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Stoneforge+Mystic&format=image&version=normal" },
+    { name: "Gravecrawler", manaCost: "{B}", typeLine: "Creature — Zombie", oracleText: "", power: "2", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Gravecrawler&format=image&version=normal" },
+    { name: "Diregraf Ghoul", manaCost: "{B}", typeLine: "Creature — Zombie", oracleText: "", power: "2", toughness: "2", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Diregraf+Ghoul&format=image&version=normal" },
+    { name: "Gray Merchant of Asphodel", manaCost: "{3}{B}{B}", typeLine: "Creature — Zombie Cleric", oracleText: "", power: "2", toughness: "4", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Gray+Merchant+of+Asphodel&format=image&version=normal" },
+    { name: "Liliana's Reaver", manaCost: "{2}{B}{B}", typeLine: "Creature — Zombie", oracleText: "Deathtouch", power: "4", toughness: "3", colors: ["B"], keywords: ["Deathtouch"], imageUrl: "https://api.scryfall.com/cards/named?exact=Liliana%27s+Reaver&format=image&version=normal" },
+    { name: "Soul Warden", manaCost: "{W}", typeLine: "Creature — Human Cleric", oracleText: "", power: "1", toughness: "1", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Soul+Warden&format=image&version=normal" },
+    { name: "Grand Abolisher", manaCost: "{W}{W}", typeLine: "Creature — Human Cleric", oracleText: "", power: "2", toughness: "2", colors: ["W"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Grand+Abolisher&format=image&version=normal" },
+    { name: "Thalia, Guardian of Thraben", manaCost: "{1}{W}", typeLine: "Legendary Creature — Human Soldier", oracleText: "First Strike", power: "2", toughness: "1", colors: ["W"], keywords: ["First Strike"], imageUrl: "https://api.scryfall.com/cards/named?exact=Thalia%2C+Guardian+of+Thraben&format=image&version=normal" },
+    { name: "Olivia Voldaren", manaCost: "{2}{B}{R}", typeLine: "Legendary Creature — Vampire", oracleText: "Flying", power: "3", toughness: "3", colors: ["B", "R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Olivia+Voldaren&format=image&version=normal" },
+    { name: "Aurelia, the Warleader", manaCost: "{2}{R}{R}{W}{W}", typeLine: "Legendary Creature — Angel", oracleText: "Flying, Vigilance, Haste", power: "3", toughness: "4", colors: ["R", "W"], keywords: ["Flying", "Vigilance", "Haste"], imageUrl: "https://api.scryfall.com/cards/named?exact=Aurelia%2C+the+Warleader&format=image&version=normal" },
+    { name: "Liliana's Standard Bearer", manaCost: "{2}{B}", typeLine: "Creature — Zombie Knight", oracleText: "", power: "3", toughness: "1", colors: ["B"], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Liliana%27s+Standard+Bearer&format=image&version=normal" },
+    { name: "Steel Overseer", manaCost: "{2}", typeLine: "Artifact Creature — Construct", oracleText: "", power: "1", toughness: "1", colors: [], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Steel+Overseer&format=image&version=normal" },
+    { name: "Solemn Simulacrum", manaCost: "{4}", typeLine: "Artifact Creature — Golem", oracleText: "", power: "2", toughness: "2", colors: [], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Solemn+Simulacrum&format=image&version=normal" }
 ].filter(c => c.typeLine.includes("Creature"));
 
 
@@ -40,6 +50,7 @@ const createPlayer = (id: string, name: string): Player => {
         exile: [],
         commandZone: [],
         battlefield: [], // Init empty, filled by shuffle
+        gold: 0,
     };
 };
 
@@ -75,7 +86,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     lastCombatSummary: null,
     showSummary: false,
     log: ["Welcome to the Battle Simulator!", "Click 'New Battle' to start."],
-    quizMode: true, // Default to true for training
+    quizMode: true, // Always on
     showQuiz: false,
     pendingOutcome: null,
     autoBattle: true,
@@ -83,6 +94,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
     showTurnBanner: null,
     winner: null,
     showStartPrompt: false,
+    showShop: false,
 
     startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => {
         const { addLog, players } = get();
@@ -142,7 +154,49 @@ export const useGameStore = create<GameStore>((set, get) => ({
             }
         });
 
+        const incorrectCount = totalChecked - correctCount;
+        const goldEarned = correctCount * 10;
+        const opponentGoldEarned = incorrectCount * 10;
+
         addLog(`Quiz submitted! Result: ${correctCount}/${totalChecked} correct.`);
+        if (goldEarned > 0) {
+            addLog(`🪙 You earned ${goldEarned} gold!`);
+        }
+        if (opponentGoldEarned > 0) {
+            addLog(`💰 Opponent earned ${opponentGoldEarned} gold from your mistakes!`);
+        }
+
+        // Update player gold and apply +1/+1 counters for incorrect answers
+        set(state => {
+            const newPlayers = state.players.map(p => {
+                if (p.id === 'player1') {
+                    return { ...p, gold: p.gold + goldEarned };
+                }
+                if (p.id === 'player2' && incorrectCount > 0) {
+                    // Add +1/+1 counters to random opponent creatures
+                    const availableCreatures = p.battlefield.filter(c => !pendingOutcome.deaths.includes(c.id));
+                    if (availableCreatures.length > 0) {
+                        const newBattlefield = [...p.battlefield];
+                        for (let i = 0; i < incorrectCount; i++) {
+                            const randomIndex = Math.floor(Math.random() * availableCreatures.length);
+                            const randomCreature = availableCreatures[randomIndex];
+                            const cardIndex = newBattlefield.findIndex(c => c.id === randomCreature.id);
+                            if (cardIndex !== -1) {
+                                newBattlefield[cardIndex] = {
+                                    ...newBattlefield[cardIndex],
+                                    plusOneCounters: newBattlefield[cardIndex].plusOneCounters + 1
+                                };
+                                addLog(`❌ ${randomCreature.name} gets a +1/+1 counter!`);
+                            }
+                        }
+                        return { ...p, battlefield: newBattlefield, gold: p.gold + opponentGoldEarned };
+                    }
+                    return { ...p, gold: p.gold + opponentGoldEarned };
+                }
+                return p;
+            });
+            return { players: newPlayers };
+        });
 
         // After quiz feedback (could be more elaborate, but starting with this)
         // We'll proceed to resolve.
@@ -175,7 +229,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     controllerId: p.id,
                     ownerId: p.id,
                     tapped: false,
-                    damageTaken: 0
+                    damageTaken: 0,
+                    plusOneCounters: 0,
+                    minusOneCounters: 0,
+                    summoningSickness: false,
+                    shieldCounters: 0
                 }));
 
                 return {
@@ -220,8 +278,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
             const attacker = attackerPlayer.battlefield.find(c => c.id === attackerId);
             if (!attacker) return;
 
-            const attPower = parseInt(attacker.power || '0');
-            const attToughness = parseInt(attacker.toughness || '0');
+            const attPower = parseInt(attacker.power || '0') + (attacker.plusOneCounters || 0);
+            const attToughness = parseInt(attacker.toughness || '0') + (attacker.plusOneCounters || 0);
 
             // Find best blocker
             // Strategy: 1. Kill and Survive, 2. Kill and Trade, 3. Survive (Stall), 4. Last Resort
@@ -234,8 +292,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 const blkReach = blocker.keywords?.includes('Reach');
                 if (attFlying && !blkFlying && !blkReach) return false;
 
-                const blkPower = parseInt(blocker.power || '0');
-                const blkToughness = parseInt(blocker.toughness || '0');
+                const blkPower = parseInt(blocker.power || '0') + (blocker.plusOneCounters || 0);
+                const blkToughness = parseInt(blocker.toughness || '0') + (blocker.plusOneCounters || 0);
                 const isBlkDeathtouch = blocker.keywords?.includes('Deathtouch');
                 const isAttDeathtouch = attacker.keywords?.includes('Deathtouch');
 
@@ -413,8 +471,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                         bIds.forEach(blkId => {
                             const blocker = p1.battlefield.find(c => c.id === blkId);
                             if (blocker && !hasKeyword(blocker, 'First Strike') && !hasKeyword(blocker, 'Double Strike')) {
-                                const attPower = parseInt(attacker.power || '0');
-                                const blkToughness = parseInt(blocker.toughness || '0');
+                                const attPower = parseInt(attacker.power || '0') + (attacker.plusOneCounters || 0);
+                                const blkToughness = parseInt(blocker.toughness || '0') + (blocker.plusOneCounters || 0);
                                 if (attPower >= blkToughness) {
                                     const otherAttackers = attackers.find(id => {
                                         const other = p2.battlefield.find(c => c.id === id);
@@ -457,11 +515,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const hasKeyword = (card: Card, keyword: string) =>
             card.keywords?.some(k => k.toLowerCase() === keyword.toLowerCase());
 
+        const getActualPower = (card: Card) => parseInt(card.power || '0') + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
+        const getActualToughness = (card: Card) => parseInt(card.toughness || '0') + (card.plusOneCounters || 0) - (card.minusOneCounters || 0);
+
         const checkLethal = (cardId: string) => {
             const card = getCard(cardId);
             if (!card) return true;
             const dmg = damageOnCard[cardId] || 0;
-            const tough = parseInt(card.toughness || '0');
+            const tough = getActualToughness(card);
             if (dmg >= tough) return true;
             if (dmg > 0) {
                 return damageEvents.some(e => e.targetId === cardId && e.isDeathtouch && e.damage > 0);
@@ -496,7 +557,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 if (!attackerShouldDeal) return;
 
                 const bIds = blockers[attId] || [];
-                const attPower = parseInt(attacker.power || '0');
+                const attPower = getActualPower(attacker);
                 const isLifelink = hasKeyword(attacker, 'Lifelink');
                 const isDeathtouch = hasKeyword(attacker, 'Deathtouch');
                 const isTrample = hasKeyword(attacker, 'Trample');
@@ -520,7 +581,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                         // to its blockers in order, and needs to know if the first is "done".
                         if (!blocker || checkLethal(blkId)) return;
 
-                        const tough = parseInt(blocker.toughness || '0');
+                        const tough = getActualToughness(blocker);
                         const alreadyTaken = damageOnCard[blkId] || 0;
                         const lethalNeeded = isDeathtouch ? 1 : Math.max(0, tough - alreadyTaken);
                         const assigned = isTrample ? Math.min(powerToAssign, lethalNeeded) : powerToAssign;
@@ -592,7 +653,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
                     if (!blockerShouldDeal) return;
 
-                    const blkPower = parseInt(blocker.power || '0');
+                    const blkPower = getActualPower(blocker);
                     const isLifelink = hasKeyword(blocker, 'Lifelink');
                     const isDeathtouch = hasKeyword(blocker, 'Deathtouch');
 
@@ -633,7 +694,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         allCombatants.forEach(card => {
             // Check for deathtouch from any event targeting this card
             const tookDeathtouch = damageEvents.some(e => e.targetId === card.id && e.isDeathtouch && e.damage > 0);
-            const tough = parseInt(card.toughness || '0');
+            const tough = getActualToughness(card);
             const dmg = damageOnCard[card.id] || 0;
 
             if (dmg >= tough || tookDeathtouch) {
@@ -697,7 +758,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         attackers.forEach(id => {
             const card = attackerProp?.battlefield.find(c => c.id === id);
             if (card) {
-                const pwr = parseInt(card.power || '0');
+                const pwr = parseInt(card.power || '0') + (card.plusOneCounters || 0);
                 incomingDmg += pwr;
                 if (blockers[id] && blockers[id].length > 0) {
                     blockedDmg += pwr; // Simplified: if blocked, we count the whole power as "contained" for the ratio
@@ -715,6 +776,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         const p1Lost = p1?.battlefield.filter(c => outcome.deaths.includes(c.id)).length || 0;
         const p2Lost = p2?.battlefield.filter(c => outcome.deaths.includes(c.id)).length || 0;
 
+        // Calculate gold earned from killing opponent creatures
+        const goldPerKill = 25;
+        const goldEarned = p2Lost * goldPerKill;
+        const opponentGoldFromKills = p1Lost * goldPerKill;
+
         set({
             lastCombatSummary: {
                 totalIncoming: incomingDmg,
@@ -725,21 +791,40 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 defenderId: defenderPlayerId,
                 playerCreaturesLost: p1Lost,
                 opponentCreaturesLost: p2Lost,
-                killLog: outcome.deathDescriptions
+                killLog: outcome.deathDescriptions,
+                goldEarned
             },
             showSummary: true
         });
 
-        // Apply Damage Events
+        // Log gold earnings
+        if (goldEarned > 0 && activePlayerId === 'player1') {
+            addLog(`🪙 Earned ${goldEarned} gold from kills!`);
+        }
+        if (opponentGoldFromKills > 0 && activePlayerId === 'player2') {
+            addLog(`💰 Opponent earned ${opponentGoldFromKills} gold from kills!`);
+        }
+
+        // Apply Damage Events and award gold in single state update
         set(state => {
             const newPlayers = state.players.map(p => {
                 let newLife = p.life;
+                let newGold = p.gold;
+
                 if (p.id === attackerPlayerId) newLife += outcome.attackerLifeGained;
                 if (p.id === defenderPlayerId) {
                     const totalToPlayer = outcome.damageEvents
                         .filter((e: DamageEvent) => e.targetId === defenderPlayerId)
                         .reduce((sum: number, e: DamageEvent) => sum + e.damage, 0);
                     newLife -= totalToPlayer;
+                }
+
+                // Award gold for kills
+                if (p.id === 'player1' && goldEarned > 0 && activePlayerId === 'player1') {
+                    newGold += goldEarned;
+                }
+                if (p.id === 'player2' && opponentGoldFromKills > 0 && activePlayerId === 'player2') {
+                    newGold += opponentGoldFromKills;
                 }
 
                 const updatedBattlefield = p.battlefield.map(card => {
@@ -749,37 +834,63 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     return { ...card, damageTaken: card.damageTaken + damageTaken };
                 });
 
-                return { ...p, life: newLife, battlefield: updatedBattlefield };
+                return { ...p, life: newLife, gold: newGold, battlefield: updatedBattlefield };
             });
 
-            // Process deaths
+            // Process deaths - check for shield counters
             const finalPlayers = newPlayers.map(p => {
-                const deadCards = p.battlefield.filter(c => outcome.deaths.includes(c.id));
-                const livingCards = p.battlefield.filter(c => !outcome.deaths.includes(c.id));
+                const actualDeadCards: Card[] = [];
+                const savedByShieldCards: Card[] = [];
 
-                deadCards.forEach(c => addLog(`${p.name}'s ${c.name} dies.`));
+                p.battlefield.forEach(c => {
+                    if (outcome.deaths.includes(c.id)) {
+                        // Creature would die - check for shield counter
+                        if (c.shieldCounters > 0) {
+                            // Shield counter saves it - remove one shield counter
+                            savedByShieldCards.push({ ...c, shieldCounters: c.shieldCounters - 1 });
+                            addLog(`🛡️ ${p.name}'s ${c.name} is saved by a shield counter!`);
+                        } else {
+                            // No shield counter - creature dies
+                            actualDeadCards.push(c);
+                            addLog(`${p.name}'s ${c.name} dies.`);
+                        }
+                    }
+                });
+
+                const survivingCards = p.battlefield.filter(c => !outcome.deaths.includes(c.id));
 
                 return {
                     ...p,
-                    battlefield: livingCards,
-                    graveyard: [...p.graveyard, ...deadCards]
+                    battlefield: [...survivingCards, ...savedByShieldCards],
+                    graveyard: [...p.graveyard, ...actualDeadCards]
                 };
             });
 
-            // CHECK FOR VICTORY
-            const p1Wiped = finalPlayers[0].battlefield.length === 0;
-            const p2Wiped = finalPlayers[1].battlefield.length === 0;
+            // CHECK FOR VICTORY - only if we have valid player data
+            if (finalPlayers && finalPlayers.length >= 2) {
+                const p1Wiped = finalPlayers[0]?.battlefield?.length === 0;
+                const p2Wiped = finalPlayers[1]?.battlefield?.length === 0;
+                const p1Dead = (finalPlayers[0]?.life || 0) <= 0;
+                const p2Dead = (finalPlayers[1]?.life || 0) <= 0;
 
-            if (p1Wiped || p2Wiped) {
-                const winnerId = p1Wiped ? 'player2' : 'player1';
-                setTimeout(() => {
-                    set({
-                        winner: winnerId,
-                        autoBattle: false
-                    });
-                    addLog(`💀 ${p1Wiped ? finalPlayers[0].name : finalPlayers[1].name}'s army has been destroyed!`);
-                    addLog(`--- BATTLE CONCLUDED: ${winnerId === 'player1' ? 'VICTORY' : 'DEFEAT'} ---`);
-                }, 1000); // Small delay to let deaths animate
+                if (p1Wiped || p2Wiped || p1Dead || p2Dead) {
+                    const winnerId = (p1Wiped || p1Dead) ? 'player2' : 'player1';
+                    setTimeout(() => {
+                        set({
+                            winner: winnerId,
+                            autoBattle: false
+                        });
+                        if (p1Wiped || p2Wiped) {
+                            const loser = p1Wiped ? finalPlayers[0] : finalPlayers[1];
+                            addLog(`💀 ${loser?.name || 'Player'}'s army has been destroyed!`);
+                        }
+                        if (p1Dead || p2Dead) {
+                            const loser = p1Dead ? finalPlayers[0] : finalPlayers[1];
+                            addLog(`💀 ${loser?.name || 'Player'} has been defeated (Life: ${loser?.life || 0})!`);
+                        }
+                        addLog(`--- BATTLE CONCLUDED: ${winnerId === 'player1' ? 'VICTORY' : 'DEFEAT'} ---`);
+                    }, 1000); // Small delay to let deaths animate
+                }
             }
 
             return { players: finalPlayers, pendingOutcome: null };
@@ -811,12 +922,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
         else if (phase === 'main1') {
             nextPhase = 'combat';
             nextCombatStep = 'begin';
-            set({ combatStats: { damageDealt: 0, damageBlocked: 0, creaturesLost: 0 } });
+            set({ combatStats: { damageDealt: 0, damageBlocked: 0, creaturesLost: 0 }, selectedCardId: null });
             addLog(`Phase: Combat (Beginning)`);
         }
         else if (phase === 'combat') {
             if (combatStep === 'begin') {
                 nextCombatStep = 'declareAttackers';
+                set({ selectedCardId: null });
                 addLog(`Step: Declare Attackers`);
             }
             else if (combatStep === 'declareAttackers') {
@@ -887,7 +999,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 nextCombatStep = 'combatDamage';
                 addLog(`Step: Combat Damage`);
                 // Force state update immediately so resolveCombat sees the new combatStep
-                set({ combatStep: 'combatDamage' });
+                set({ combatStep: 'combatDamage', selectedCardId: null });
                 get().resolveCombat();
             }
             else if (combatStep === 'combatDamage') {
@@ -920,6 +1032,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
             set({ showTurnBanner: nextPlayerName });
             setTimeout(() => set({ showTurnBanner: null }), 2000);
 
+            // AI shop purchases at start of their turn
+            if (nextActivePlayerId === 'player2') {
+                setTimeout(() => {
+                    get().performAIShopPurchases();
+                }, 800);
+            }
+
             set(state => ({
                 players: state.players.map(p => ({
                     ...p,
@@ -928,7 +1047,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
                         // Only untap the incoming player's permanents
                         tapped: p.id === nextActivePlayerId ? false : c.tapped,
                         // ALL creatures have damage removed during cleanup step (MTG rule 514.2)
-                        damageTaken: 0
+                        damageTaken: 0,
+                        // Clear summoning sickness for active player's creatures
+                        summoningSickness: p.id === nextActivePlayerId ? false : c.summoningSickness
                     }))
                 }))
             }));
@@ -1060,6 +1181,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return;
         }
 
+        if (card.summoningSickness && !card.keywords?.includes('Haste')) {
+            addLog(`${card.name} has summoning sickness and cannot attack.`);
+            return;
+        }
+
         set({ attackers: [...attackers, cardId] });
     },
 
@@ -1111,6 +1237,354 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 blockers: newBlockers,
                 selectedCardId: attackerId // Keep the attacker selected for multi-blocking
             };
+        });
+    },
+
+    toggleShop: () => {
+        set(state => ({ showShop: !state.showShop }));
+    },
+
+    purchaseUpgrade: (upgrade: string, cost: number) => {
+        const { players, addLog } = get();
+        const player = players.find(p => p.id === 'player1');
+
+        if (!player || player.gold < cost) {
+            addLog(`Not enough gold! Need ${cost}, have ${player?.gold || 0}.`);
+            return;
+        }
+
+        set(state => {
+            let updatedPlayers = [...state.players];
+
+            if (upgrade === 'spawn_creature') {
+                // Spawn a random creature for player1
+                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                const newCreature = {
+                    ...randomCard,
+                    id: `player1-creature-${Date.now()}-${Math.random()}`,
+                    controllerId: 'player1',
+                    ownerId: 'player1',
+                    tapped: false,
+                    damageTaken: 0,
+                    plusOneCounters: 0,
+                    minusOneCounters: 0,
+                    summoningSickness: true,
+                    shieldCounters: 0
+                };
+
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player1') return p;
+                    return {
+                        ...p,
+                        battlefield: [...p.battlefield, newCreature]
+                    };
+                });
+
+                addLog(`✨ Summoned ${newCreature.name} to your battlefield!`);
+            } else if (upgrade === 'plus_counter' || upgrade === 'minus_counter') {
+                const targetPlayer = upgrade === 'plus_counter' ? 'player1' : 'player2';
+                const targetCreatures = state.players.find(pl => pl.id === targetPlayer)?.battlefield || [];
+
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== targetPlayer) return pl;
+
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                if (upgrade === 'plus_counter') {
+                                    return { ...c, plusOneCounters: c.plusOneCounters + 1 };
+                                } else {
+                                    return { ...c, minusOneCounters: c.minusOneCounters + 1 };
+                                }
+                            }
+                            return c;
+                        }).filter(c => {
+                            const baseToughness = parseInt(c.toughness || '0');
+                            const netToughness = baseToughness + (c.plusOneCounters || 0) - (c.minusOneCounters || 0);
+                            return netToughness > 0;
+                        });
+
+                        return {
+                            ...pl,
+                            battlefield: updatedBattlefield
+                        };
+                    });
+
+                    const baseToughness = parseInt(randomCreature.toughness || '0');
+                    const netToughness = baseToughness + (randomCreature.plusOneCounters || 0) - (randomCreature.minusOneCounters || 0) - (upgrade === 'minus_counter' ? 1 : 0);
+
+                    if (upgrade === 'minus_counter' && netToughness <= 0) {
+                        addLog(`💀 -1/-1 counter applied to ${randomCreature.name} - creature dies!`);
+                    } else {
+                        addLog(`${upgrade === 'plus_counter' ? '🪙 +1/+1' : '💀 -1/-1'} counter applied to ${randomCreature.name}!`);
+                    }
+                }
+            } else if (upgrade === 'life_gain') {
+                updatedPlayers = state.players.map(p =>
+                    p.id === 'player1' ? { ...p, life: p.life + 2 } : p
+                );
+                addLog(`💖 You gained 2 life!`);
+            } else if (upgrade === 'gamble_spawn') {
+                // Spawn a creature for opponent with summoning sickness
+                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                const newCreature = {
+                    ...randomCard,
+                    id: `player2-creature-${Date.now()}-${Math.random()}`,
+                    controllerId: 'player2',
+                    ownerId: 'player2',
+                    tapped: false,
+                    damageTaken: 0,
+                    plusOneCounters: 0,
+                    minusOneCounters: 0,
+                    summoningSickness: true,
+                    shieldCounters: 0
+                };
+
+                // Random gold between 0 and 200
+                const goldEarned = Math.floor(Math.random() * 201);
+
+                updatedPlayers = state.players.map(p => {
+                    if (p.id === 'player2') {
+                        return {
+                            ...p,
+                            battlefield: [...p.battlefield, newCreature]
+                        };
+                    } else if (p.id === 'player1') {
+                        return {
+                            ...p,
+                            gold: p.gold + goldEarned
+                        };
+                    }
+                    return p;
+                });
+
+                addLog(`🎲 GAMBLE! Spawned ${newCreature.name} for opponent - you earned ${goldEarned} gold!`);
+                // No cost deduction since it's free, but we still return here to skip the final gold deduction
+                return { players: updatedPlayers };
+            } else if (upgrade === 'shield_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player1')?.battlefield || [];
+
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player1') return pl;
+                        return {
+                            ...pl,
+                            battlefield: pl.battlefield.map(c =>
+                                c.id === randomCreature.id
+                                    ? { ...c, shieldCounters: c.shieldCounters + 1 }
+                                    : c
+                            )
+                        };
+                    });
+
+                    addLog(`🛡️ Shield counter applied to ${randomCreature.name}!`);
+                }
+            } else {
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player1') return p;
+
+                    const availableCreatures = p.battlefield.filter(c => !c.keywords.includes(upgrade));
+                    if (availableCreatures.length > 0) {
+                        const randomCreature = availableCreatures[Math.floor(Math.random() * availableCreatures.length)];
+                        const newBattlefield = p.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return {
+                                    ...c,
+                                    keywords: [...c.keywords, upgrade]
+                                };
+                            }
+                            return c;
+                        });
+
+                        addLog(`✨ ${randomCreature.name} gains ${upgrade}!`);
+                        return { ...p, battlefield: newBattlefield };
+                    }
+                    return p;
+                });
+            }
+
+            // Deduct gold from player1
+            const finalPlayers = updatedPlayers.map(p =>
+                p.id === 'player1' ? { ...p, gold: p.gold - cost } : p
+            );
+
+            return { players: finalPlayers };
+        });
+    },
+
+    performAIShopPurchases: () => {
+        const { players, addLog } = get();
+        const aiPlayer = players.find(p => p.id === 'player2');
+
+        if (!aiPlayer || aiPlayer.gold < 24) return; // 24 is cheapest item
+
+        // Define shop items with their costs and IDs
+        const shopItems = [
+            { id: 'plus_counter', cost: 24, category: 'quick', priority: 3 },
+            { id: 'life_gain', cost: 32, category: 'quick', priority: 2 },
+            { id: 'Flying', cost: 56, category: 'premium', priority: 5 },
+            { id: 'Vigilance', cost: 52, category: 'premium', priority: 4 },
+            { id: 'Trample', cost: 60, category: 'premium', priority: 5 },
+            { id: 'Lifelink', cost: 60, category: 'premium', priority: 6 },
+            { id: 'minus_counter', cost: 64, category: 'quick', priority: 7 },
+            { id: 'Deathtouch', cost: 64, category: 'premium', priority: 6 },
+            { id: 'First Strike', cost: 68, category: 'premium', priority: 5 },
+            { id: 'Double Strike', cost: 72, category: 'premium', priority: 8 },
+            { id: 'spawn_creature', cost: 80, category: 'quick', priority: 4 },
+            { id: 'shield_counter', cost: 85, category: 'premium', priority: 7 }
+        ];
+
+        // Filter affordable items
+        const affordable = shopItems.filter(item => item.cost <= aiPlayer.gold);
+        if (affordable.length === 0) return;
+
+        // AI strategy: Prefer higher priority items, but add some randomness
+        const sorted = affordable.sort((a, b) => b.priority - a.priority);
+
+        // 70% chance to pick top priority, 30% chance to pick any affordable
+        const selectedItem = Math.random() < 0.7
+            ? sorted[0]
+            : affordable[Math.floor(Math.random() * affordable.length)];
+
+        // Process the purchase for AI (player2)
+        set(state => {
+            let updatedPlayers = [...state.players];
+
+            if (selectedItem.id === 'spawn_creature') {
+                // Spawn a random creature for player2
+                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                const newCreature = {
+                    ...randomCard,
+                    id: `player2-creature-${Date.now()}-${Math.random()}`,
+                    controllerId: 'player2',
+                    ownerId: 'player2',
+                    tapped: false,
+                    damageTaken: 0,
+                    plusOneCounters: 0,
+                    minusOneCounters: 0,
+                    summoningSickness: true,
+                    shieldCounters: 0
+                };
+
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player2') return p;
+                    return {
+                        ...p,
+                        battlefield: [...p.battlefield, newCreature]
+                    };
+                });
+
+                addLog(`🤖 AI summoned ${newCreature.name}!`);
+            } else if (selectedItem.id === 'plus_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player2')?.battlefield || [];
+
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player2') return pl;
+
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return { ...c, plusOneCounters: c.plusOneCounters + 1 };
+                            }
+                            return c;
+                        });
+
+                        return { ...pl, battlefield: updatedBattlefield };
+                    });
+
+                    addLog(`🤖 AI granted +1/+1 counter to ${randomCreature.name}!`);
+                }
+            } else if (selectedItem.id === 'minus_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player1')?.battlefield || [];
+
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player1') return pl;
+
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return { ...c, minusOneCounters: c.minusOneCounters + 1 };
+                            }
+                            return c;
+                        }).filter(c => {
+                            const baseToughness = parseInt(c.toughness || '0');
+                            const netToughness = baseToughness + (c.plusOneCounters || 0) - (c.minusOneCounters || 0);
+                            return netToughness > 0;
+                        });
+
+                        return { ...pl, battlefield: updatedBattlefield };
+                    });
+
+                    addLog(`🤖 AI placed -1/-1 counter on your ${randomCreature.name}!`);
+                }
+            } else if (selectedItem.id === 'life_gain') {
+                updatedPlayers = state.players.map(p => {
+                    if (p.id !== 'player2') return p;
+                    return { ...p, life: p.life + 2 };
+                });
+                addLog(`🤖 AI gained 2 life!`);
+            } else if (selectedItem.id === 'shield_counter') {
+                const targetCreatures = state.players.find(pl => pl.id === 'player2')?.battlefield || [];
+
+                if (targetCreatures.length > 0) {
+                    const randomCreature = targetCreatures[Math.floor(Math.random() * targetCreatures.length)];
+                    updatedPlayers = state.players.map(pl => {
+                        if (pl.id !== 'player2') return pl;
+
+                        const updatedBattlefield = pl.battlefield.map(c => {
+                            if (c.id === randomCreature.id) {
+                                return { ...c, shieldCounters: c.shieldCounters + 1 };
+                            }
+                            return c;
+                        });
+
+                        return { ...pl, battlefield: updatedBattlefield };
+                    });
+
+                    addLog(`🤖 AI granted shield counter to ${randomCreature.name}!`);
+                }
+            } else if (['Flying', 'Trample', 'Deathtouch', 'First Strike', 'Lifelink', 'Vigilance', 'Double Strike'].includes(selectedItem.id)) {
+                const targetCreatures = state.players.find(pl => pl.id === 'player2')?.battlefield || [];
+
+                if (targetCreatures.length > 0) {
+                    const eligibleCreatures = targetCreatures.filter(c =>
+                        !c.keywords?.some(k => k.toLowerCase() === selectedItem.id.toLowerCase())
+                    );
+
+                    if (eligibleCreatures.length > 0) {
+                        const randomCreature = eligibleCreatures[Math.floor(Math.random() * eligibleCreatures.length)];
+
+                        updatedPlayers = state.players.map(p => {
+                            if (p.id !== 'player2') return p;
+
+                            const newBattlefield = p.battlefield.map(c => {
+                                if (c.id === randomCreature.id) {
+                                    return {
+                                        ...c,
+                                        keywords: [...c.keywords, selectedItem.id]
+                                    };
+                                }
+                                return c;
+                            });
+
+                            return { ...p, battlefield: newBattlefield };
+                        });
+
+                        addLog(`🤖 AI granted ${selectedItem.id} to ${randomCreature.name}!`);
+                    }
+                }
+            }
+
+            // Deduct gold from player2
+            const finalPlayers = updatedPlayers.map(p =>
+                p.id === 'player2' ? { ...p, gold: p.gold - selectedItem.cost } : p
+            );
+
+            return { players: finalPlayers };
         });
     }
 }));
