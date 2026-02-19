@@ -7,7 +7,8 @@ import { CombatQuizModal } from './CombatQuizModal';
 import { CombatSummaryModal } from './CombatSummaryModal';
 import { TurnBanner } from './TurnBanner';
 import { VictoryModal } from './VictoryModal';
-import { Shuffle, GraduationCap, Swords } from 'lucide-react';
+import { StartBattleModal } from './StartBattleModal';
+import { Shuffle, GraduationCap } from 'lucide-react';
 
 export const GameInterface = () => {
     const {
@@ -17,9 +18,7 @@ export const GameInterface = () => {
         combatStep,
         shuffleBoard,
         quizMode,
-        toggleQuizMode,
-        autoBattle,
-        toggleAutoBattle
+        toggleQuizMode
     } = useGameStore();
 
     const player1 = players[0];
@@ -52,21 +51,6 @@ export const GameInterface = () => {
                         {quizMode ? "Quiz Mode: ON" : "Quiz Mode: OFF"}
                     </button>
 
-                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
-
-                    <button
-                        onClick={toggleAutoBattle}
-                        className={`px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md border ${autoBattle
-                            ? "bg-red-600 border-red-400 text-white animate-pulse"
-                            : "bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200"
-                            }`}
-                        title={autoBattle ? "AI ADVERSARY: LIVE" : "AI ADVERSARY: OFF"}
-                    >
-                        <Swords size={18} />
-                        {autoBattle ? "AI ADVERSARY: ON" : "DUEL THE AI"}
-                    </button>
-
-                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
 
                     <div className="flex flex-col">
                         <span className="text-[10px] text-slate-500 font-bold uppercase">Active Player</span>
@@ -106,6 +90,7 @@ export const GameInterface = () => {
                     <CombatWizard />
                     <CombatQuizModal />
                     <CombatSummaryModal />
+                    <StartBattleModal />
 
                     {/* Main Game Plane */}
                     <div className="flex-grow flex flex-col relative overflow-hidden perspective-1000 bg-neutral-900">

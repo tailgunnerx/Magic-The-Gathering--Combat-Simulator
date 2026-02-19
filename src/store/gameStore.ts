@@ -78,25 +78,36 @@ export const useGameStore = create<GameStore>((set, get) => ({
     quizMode: true, // Default to true for training
     showQuiz: false,
     pendingOutcome: null,
-    autoBattle: false,
+    autoBattle: true,
     autoBattleTimeout: null,
     showTurnBanner: null,
     winner: null,
+    showStartPrompt: false,
 
-    toggleAutoBattle: () => {
-        const { autoBattle, nextPhase, performOpponentAttacks, activePlayerId, combatStep, autoBattleTimeout } = get();
-        const isTurningOn = !autoBattle;
+    startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => {
+        const { addLog, players } = get();
 
-        if (autoBattleTimeout) clearTimeout(autoBattleTimeout);
+        let actualStarter = startingPlayerId;
+        if (startingPlayerId === 'random') {
+            actualStarter = Math.random() > 0.5 ? 'player1' : 'player2';
+        }
 
-        set({ autoBattle: isTurningOn, autoBattleTimeout: null });
-        if (isTurningOn) {
-            // If it's already AI turn to attack, trigger it
-            if (activePlayerId === 'player2' && combatStep === 'declareAttackers') {
-                performOpponentAttacks();
-            }
-            // Start the engine
-            nextPhase();
+        const starterName = players.find(p => p.id === actualStarter)?.name || actualStarter;
+        addLog(`--- BATTLE COMMENCES ---`);
+        addLog(`${starterName} has the initiative and will attack first.`);
+
+        set({
+            activePlayerId: actualStarter,
+            phase: 'combat',
+            combatStep: 'declareAttackers',
+            showStartPrompt: false
+        });
+
+        // Trigger AI if it's player2's turn
+        if (actualStarter === 'player2') {
+            const currentStore = useGameStore.getState();
+            currentStore.performOpponentAttacks();
+            // The auto-advance will kick in via the nextPhase loop if we are in autoBattle mode (which is now always true)
         }
     },
 
@@ -179,14 +190,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
             return {
                 players: newPlayers,
-                phase: 'combat',
-                combatStep: 'declareAttackers',
+                phase: 'beginning',
+                combatStep: undefined,
                 turnCount: 1,
                 attackers: [],
                 blockers: {},
                 activePlayerId: 'player1',
                 winner: null,
-                log: ["--- NEW BATTLE STARTED ---", `Player 1 spawns with ${p1Count} creatures.`, `Player 2 spawns with ${p2Count} creatures.`, "Combat Phase: Declare Attackers."]
+                showStartPrompt: true,
+                log: ["--- NEW BATTLE PREPARED ---", `Player 1 spawns with ${p1Count} creatures.`, `Player 2 spawns with ${p2Count} creatures.`, "Who should attack first?"]
             };
         });
     },

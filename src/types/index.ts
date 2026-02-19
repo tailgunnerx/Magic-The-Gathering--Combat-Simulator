@@ -89,6 +89,7 @@ export interface GameState {
     selectedCardId: string | null;
     log: string[];
     winner: string | null;
+    showStartPrompt: boolean;
 
     // Actions
     addLog: (message: string) => void;
@@ -96,9 +97,10 @@ export interface GameState {
     submitQuiz: (userPredictions: Record<string, 'Survives' | 'Dies'>, userTrample?: Record<string, number>) => void;
     closeQuiz: () => void;
     cancelQuiz: () => void;
-    toggleAutoBattle: () => void;
     performOpponentAttacks: () => void;
     getCombatHints: () => string[];
+    shuffleBoard: () => void;
+    startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => void;
 
     // Actions
     nextPhase: () => void;
