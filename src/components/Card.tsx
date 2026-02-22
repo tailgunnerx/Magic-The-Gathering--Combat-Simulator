@@ -126,6 +126,23 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                     </motion.div>
                 )}
 
+                {/* -1/-1 Counter Indicator */}
+                {(card.minusOneCounters || 0) > 0 && (
+                    <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{
+                            scale: 1,
+                            rotate: isTapped ? -90 : 0
+                        }}
+                        className={clsx(
+                            "absolute bg-red-700 border-2 border-white text-white font-bold px-2 py-1 rounded-lg shadow-lg z-30",
+                            isTapped ? "bottom-2 left-2" : "bottom-12 left-2"
+                        )}
+                    >
+                        <span className="text-sm">-{card.minusOneCounters}/-{card.minusOneCounters}</span>
+                    </motion.div>
+                )}
+
                 {/* Shield Counter Indicator */}
                 {(card.shieldCounters || 0) > 0 && (
                     <motion.div

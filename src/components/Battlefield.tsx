@@ -26,7 +26,6 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
     const handleCardClick = (cardId: string) => {
         const isAttacker = activePlayerId === player.id;
         const isHumanPlayer = player.id === 'player1';
-        const isSelected = selectedCardId === cardId;
 
         if (phase === 'combat' && combatStep === 'declareAttackers') {
             if (isAttacker && isHumanPlayer) {
@@ -53,11 +52,7 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
             }
             else {
                 // I clicked an Attacking card (The Attacker)
-                if (isSelected) {
-                    // Toggling OFF an attacker
-                    declareAttacker(cardId);
-                    selectCard(null);
-                } else if (selectedCardId) {
+                if (selectedCardId) {
                     // Check if selectedCardId is actually one of my creatures
                     const myBattlefield = useGameStore.getState().players.find(p => p.id === 'player1')?.battlefield || [];
                     const isMyCard = myBattlefield.some(c => c.id === selectedCardId);
@@ -69,8 +64,8 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
                         addLog("Pick your blocker first, then pick the attacker.");
                         selectCard(null);
                     }
-                } else if (isAttacker) {
-                    // This is my own card, and it is attacking. Allow toggle off.
+                } else if (isHumanPlayer && isAttacker) {
+                    // Only allow toggling off YOUR OWN attackers, not the CPU's
                     declareAttacker(cardId);
                 } else {
                     addLog("Pick your blocker first, then pick the attacker to intercept.");
