@@ -14,6 +14,7 @@ An interactive combat simulator for Magic: The Gathering built with React, TypeS
 - **AI Opponent**: Automated opponent with strategic decision-making
 - **Interactive Gameplay**: Click-based creature selection for attacking and blocking
 - **Turn-Based Flow**: Complete phase system (Beginning → Main 1 → Combat → Main 2 → End)
+- **🛡️ Banding Mode**: A specialized, isolated environment to test and master MTG's most complex mechanic. Toggle it from the top bar to enter the Banding Lab!
 
 ### Combat Mechanics
 - **First Strike & Double Strike**: Damage dealt in separate combat steps
