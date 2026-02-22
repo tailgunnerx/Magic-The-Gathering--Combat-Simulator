@@ -1,6 +1,6 @@
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Trophy, Skull, RotateCcw, PartyPopper } from 'lucide-react';
+import { Trophy, Skull, RotateCcw, PartyPopper, Coins } from 'lucide-react';
 import { clsx } from 'clsx';
 
 export const VictoryModal = () => {
@@ -77,7 +77,7 @@ export const VictoryModal = () => {
                         </motion.div>
 
                         {/* Player Stats / Summary Mini */}
-                        <div className="grid grid-cols-2 gap-4 w-full mb-10">
+                        <div className="grid grid-cols-3 gap-4 w-full mb-10">
                             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                                 <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Status</span>
                                 <span className={clsx("font-bold text-xl", isPlayerWin ? "text-emerald-400" : "text-red-400")}>
@@ -89,6 +89,18 @@ export const VictoryModal = () => {
                                 <span className="text-white font-bold text-xl">
                                     {isPlayerWin ? <PartyPopper className="inline mr-2" size={20} /> : null}
                                     CONCLUDED
+                                </span>
+                            </div>
+                            <div className={clsx(
+                                "rounded-xl p-4 border",
+                                isPlayerWin
+                                    ? "bg-yellow-500/10 border-yellow-500/30"
+                                    : "bg-white/5 border-white/10"
+                            )}>
+                                <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Gold Reward</span>
+                                <span className={clsx("font-bold text-xl flex items-center gap-1.5", isPlayerWin ? "text-yellow-400" : "text-slate-500")}>
+                                    <Coins size={20} className={isPlayerWin ? "text-yellow-400" : "text-slate-600"} />
+                                    {isPlayerWin ? "+50" : "0"}
                                 </span>
                             </div>
                         </div>

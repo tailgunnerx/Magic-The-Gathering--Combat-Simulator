@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { GameState, Player, Phase, CombatPhaseStep, Card, CombatOutcome, DamageEvent } from '../types';
 
 const INITIAL_LIFE = 40;
+const VICTORY_GOLD_REWARD = 50;
 
 // Card Pool - ~20 varied creatures
 const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters' | 'summoningSickness' | 'shieldCounters'>[] = [
@@ -1023,10 +1024,15 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 if (p1Wiped || p2Wiped || p1Dead || p2Dead) {
                     const winnerId = (p1Wiped || p1Dead) ? 'player2' : 'player1';
                     setTimeout(() => {
-                        set({
+                        set(state => ({
                             winner: winnerId,
-                            autoBattle: false
-                        });
+                            autoBattle: false,
+                            players: state.players.map(p =>
+                                p.id === winnerId
+                                    ? { ...p, gold: p.gold + VICTORY_GOLD_REWARD }
+                                    : p
+                            )
+                        }));
                         if (p1Wiped || p2Wiped) {
                             const loser = p1Wiped ? finalPlayers[0] : finalPlayers[1];
                             addLog(`💀 ${loser?.name || 'Player'}'s army has been destroyed!`);
@@ -1035,6 +1041,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
                             const loser = p1Dead ? finalPlayers[0] : finalPlayers[1];
                             addLog(`💀 ${loser?.name || 'Player'} has been defeated (Life: ${loser?.life || 0})!`);
                         }
+                        addLog(`🏆 ${winnerId === 'player1' ? 'Player 1' : 'Player 2'} earns ${VICTORY_GOLD_REWARD} gold for winning!`);
                         addLog(`--- BATTLE CONCLUDED: ${winnerId === 'player1' ? 'VICTORY' : 'DEFEAT'} ---`);
                     }, 1000); // Small delay to let deaths animate
                 }
@@ -1243,11 +1250,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
             if (p1Wiped || p2Wiped) {
                 const winnerId = p1Wiped ? 'player2' : 'player1';
-                set({
+                set(state => ({
                     autoBattle: false,
                     autoBattleTimeout: null,
-                    winner: winnerId
-                });
+                    winner: winnerId,
+                    players: state.players.map(p =>
+                        p.id === winnerId
+                            ? { ...p, gold: p.gold + VICTORY_GOLD_REWARD }
+                            : p
+                    )
+                }));
+                addLog(`🏆 ${winnerId === 'player1' ? 'Player 1' : 'Player 2'} earns ${VICTORY_GOLD_REWARD} gold for winning!`);
                 addLog(`--- BATTLE CONCLUDED: ${winnerId === 'player1' ? 'VICTORY' : 'DEFEAT'} ---`);
                 return;
             }
