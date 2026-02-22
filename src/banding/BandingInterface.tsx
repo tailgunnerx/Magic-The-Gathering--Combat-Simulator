@@ -4,179 +4,303 @@ import { BandingBattlefield } from './BandingBattlefield';
 import { Shield, Sword, RefreshCcw, ArrowLeft, Info } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { BandingPlayerHUD } from './components/BandingPlayerHUD';
+import { BandingCombatLog } from './components/BandingCombatLog';
+import { BandingCombatWizard } from './components/BandingCombatWizard';
+import { BandingCombatQuizModal } from './components/BandingCombatQuizModal';
+import { BandingCombatSummaryModal } from './components/BandingCombatSummaryModal';
+import { BandingTurnBanner } from './components/BandingTurnBanner';
+import { BandingVictoryModal } from './components/BandingVictoryModal';
+import { BandingTreasureShop } from './components/BandingTreasureShop';
+import { BandingStartBattleModal } from './components/BandingStartBattleModal';
+import { BandingMechanicsGuide } from './components/BandingMechanicsGuide';
+import { BandingCombatTimeline } from './components/BandingCombatTimeline';
+import { BandingSkipCombatModal } from './components/BandingSkipCombatModal';
+import { BandingPenaltyNotification } from './components/BandingPenaltyNotification';
+
 export const BandingInterface = () => {
-    const { setMode } = useModeStore();
     const {
         players,
         activePlayerId,
         phase,
         combatStep,
-        nextPhase,
         shuffleBoard,
-        log,
-        attackers,
-        bands,
-        addToBand
+        showStartPrompt,
+        toggleShop
     } = useBandingStore();
 
-    const p1 = players[0];
-    const p2 = players[1];
+    const player1 = players[0];
+    const player2 = players[1];
+
+    if (!player1 || !player2) return null;
 
     return (
-        <div className="h-screen bg-[#050505] text-white flex flex-col font-sans overflow-hidden">
-            {/* Top Navigation */}
-            <div className="bg-slate-900/80 backdrop-blur-md p-3 border-b border-slate-800 flex justify-between items-center z-50">
+        <div className="h-screen bg-neutral-950 text-white flex flex-col font-sans overflow-hidden">
+            <BandingVictoryModal />
+            {/* Top Bar - Minimal */}
+            <div className="bg-neutral-900 p-3 shadow-md flex justify-between items-center z-30 border-b border-slate-800 shrink-0">
                 <div className="flex items-center gap-4">
                     <button
-                        onClick={() => setMode('normal')}
-                        className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors font-bold px-3 py-1.5 rounded-lg hover:bg-white/5"
+                        onClick={shuffleBoard}
+                        className="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md"
+                    >
+                        <RefreshCcw size={18} /> New Battle
+                    </button>
+
+                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
+
+                    <button
+                        onClick={() => useModeStore.getState().setMode('normal')}
+                        className="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md border border-slate-600"
                     >
                         <ArrowLeft size={18} /> Exit Mode
                     </button>
-                    <div className="h-6 w-px bg-slate-700"></div>
                     <div className="flex items-center gap-2">
                         <Shield className="text-amber-500" size={20} />
                         <h1 className="font-black tracking-tighter uppercase text-lg text-slate-100">Banding Lab</h1>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="px-4 py-1.5 bg-slate-800 rounded-full border border-slate-700 flex items-center gap-4 shadow-inner">
-                        <div className="flex flex-col items-center">
-                            <span className="text-[9px] uppercase font-bold text-slate-500 italic">Phase</span>
-                            <span className="text-sm font-black uppercase text-amber-400">{phase}</span>
-                        </div>
-                        <div className="w-px h-6 bg-slate-700"></div>
-                        <div className="flex flex-col items-center">
-                            <span className="text-[9px] uppercase font-bold text-slate-500 italic">Step</span>
-                            <span className="text-sm font-black uppercase text-red-400">{combatStep || 'N/A'}</span>
+                <div className="flex items-center gap-6">
+                    <div className="flex flex-col items-end">
+                        <span className="text-[10px] uppercase tracking-widest text-slate-500 font-bold">Phase</span>
+                        <div className="flex items-center gap-2">
+                            <span className="text-lg font-bold text-slate-200 capitalize">{phase}</span>
+                            {combatStep && (
+                                <>
+                                    <span className="text-slate-600">/</span>
+                                    <span className="text-lg font-bold text-red-400 capitalize">{combatStep.replace(/([A-Z])/g, ' $1').trim()}</span>
+                                </>
+                            )}
                         </div>
                     </div>
-
-                    <button
-                        onClick={nextPhase}
-                        className="bg-blue-600 hover:bg-blue-500 px-6 py-2 rounded-xl font-black uppercase tracking-tight shadow-lg active:scale-95 transition-all text-sm border-b-4 border-blue-800"
-                    >
-                        Advance Phase
-                    </button>
                 </div>
-
-                <button
-                    onClick={shuffleBoard}
-                    className="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-xl font-bold transition-all border border-slate-700 text-sm"
-                >
-                    <RefreshCcw size={16} /> Respawn Cards
-                </button>
             </div>
 
-            {/* Main Lab Area */}
-            <div className="flex-grow flex relative overflow-hidden">
+            {/* Main Content Area (Sidebar + Game Board) */}
+            <div className="flex-grow flex overflow-hidden relative">
 
-                {/* Left Sidebar: Banding Logic Console */}
-                <div className="w-80 border-r border-slate-800 flex flex-col bg-slate-900/30">
-                    <div className="p-4 border-b border-slate-800 bg-slate-900/50">
-                        <h2 className="flex items-center gap-2 font-black uppercase tracking-tighter text-slate-300">
-                            <Info size={16} className="text-blue-400" /> Interaction Log
-                        </h2>
-                    </div>
-                    <div className="flex-grow overflow-y-auto p-4 space-y-2 font-mono text-[11px]">
-                        <AnimatePresence>
-                            {log.slice().reverse().map((m: string, i: number) => (
-                                <motion.div
-                                    initial={{ opacity: 0, x: -10 }}
-                                    animate={{ opacity: 1, x: 0 }}
-                                    key={i}
-                                    className="p-2 bg-white/5 rounded border-l-2 border-slate-700 text-slate-400 leading-tight"
-                                >
-                                    <span className="text-slate-600 mr-2">[{log.length - i}]</span> {m}
-                                </motion.div>
-                            ))}
-                        </AnimatePresence>
-                    </div>
+                {/* Sidebar: Combat Log */}
+                <BandingCombatLog />
 
-                    {/* Band Formation Helper */}
-                    {phase === 'combat' && combatStep === 'declareAttackers' && attackers.length > 0 && (
-                        <div className="p-4 bg-amber-500/10 border-t border-amber-500/20">
-                            <h3 className="text-xs font-bold text-amber-500 uppercase mb-3 flex items-center gap-2">
-                                <Sword size={14} /> Form a Band
-                            </h3>
-                            <div className="space-y-2">
-                                <p className="text-[10px] text-slate-400 leading-tight mb-2">
-                                    Click an attacking creature to make it the leader, then click others to join its band.
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    {attackers.map((id: string) => {
-                                        const card = p1.battlefield.find(c => c.id === id);
-                                        if (!card) return null;
-                                        const isInBand = bands.some(b => b.includes(id));
+                {/* Right Side: Game Board & Instructions */}
+                <div className="flex-grow flex flex-col relative overflow-hidden">
 
-                                        return (
-                                            <button
-                                                key={id}
-                                                onClick={() => {
-                                                    if (!isInBand) {
-                                                        if (bands.length > 0) {
-                                                            addToBand(id, bands[0][0]);
-                                                        } else {
-                                                            const otherAttacker = attackers.find(oid => oid !== id);
-                                                            if (otherAttacker) addToBand(id, otherAttacker);
-                                                        }
-                                                    }
+                    {/* Combat Wizard Layer - Floating Guide */}
+                    <BandingTurnBanner />
+                    <BandingCombatWizard />
+                    <BandingCombatQuizModal />
+                    <BandingCombatSummaryModal />
+                    <BandingTreasureShop />
+                    <BandingStartBattleModal />
+                    <BandingSkipCombatModal />
+                    <BandingPenaltyNotification />
+
+                    {/* Main Game Plane */}
+                    <div className="flex-grow flex flex-col relative overflow-hidden perspective-1000 bg-neutral-900">
+
+                        {/* Opponent Zone */}
+                        <div className={`flex-1 flex flex-col relative border-b-2 border-slate-800/50 bg-[#1a1111] shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] transition-all duration-500 ${activePlayerId === player2.id && !showStartPrompt ? 'ring-4 ring-inset ring-amber-500/40' : ''
+                            }`}>
+                            {/* Playmat Texture Overlay */}
+                            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] pointer-events-none"></div>
+
+                            {/* Turn Indicator Glow */}
+                            {activePlayerId === player2.id && !showStartPrompt && (
+                                <div className="absolute inset-0 border-4 border-amber-500/30 shadow-[inset_0_0_50px_rgba(245,158,11,0.1)] pointer-events-none z-0 animate-pulse"></div>
+                            )}
+
+                            {/* Opponent HUD */}
+                            <div className="absolute top-4 right-4 z-20">
+                                <BandingPlayerHUD player={player2} isActive={activePlayerId === player2.id} />
+                            </div>
+
+                            {/* Opponent Battlefield (Center-Top) */}
+                            <div className="flex-grow flex items-end justify-center pb-8 p-4 z-10 w-full">
+                                <BandingBattlefield player={player2} />
+                            </div>
+                        </div>
+
+                        {/* Player Zone */}
+                        <div className={`flex-1 flex flex-col relative bg-[#111827] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] transition-all duration-500 ${activePlayerId === player1.id && !showStartPrompt ? 'ring-4 ring-inset ring-amber-500/40' : ''
+                            }`}>
+                            {/* Playmat Texture Overlay */}
+                            <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
+
+                            {/* Turn Indicator Glow */}
+                            {activePlayerId === player1.id && !showStartPrompt && (
+                                <div className="absolute inset-0 border-4 border-amber-500/30 shadow-[inset_0_0_50px_rgba(245,158,11,0.1)] pointer-events-none z-0 animate-pulse"></div>
+                            )}
+
+                            {/* Player Battlefield (Center-Bottom) */}
+                            <div className="flex-grow flex items-start justify-center pt-8 p-4 z-10 w-full">
+                                <BandingBattlefield player={player1} />
+                            </div>
+
+                            <div className="absolute bottom-4 left-4 z-30 flex items-end gap-4">
+                                <BandingPlayerHUD player={player1} isActive={activePlayerId === player1.id} />
+                                <BandingMechanicsGuide />
+                            </div>
+
+                            {/* Combat Timeline Center Piece */}
+                            <div className="absolute bottom-11 left-1/2 -translate-x-1/2 z-20">
+                                <BandingCombatTimeline />
+                            </div>
+
+                            {/* Treasure Chest Button */}
+                            <div className="absolute bottom-4 right-4 z-20">
+                                <div className="relative">
+                                    {/* Rotating Sunray Background Layer 1 */}
+                                    <motion.div
+                                        animate={{ rotate: 360 }}
+                                        transition={{
+                                            duration: 8,
+                                            repeat: Infinity,
+                                            ease: 'linear'
+                                        }}
+                                        className="absolute inset-0 -m-8"
+                                        style={{
+                                            background: 'conic-gradient(from 0deg, transparent 0%, rgba(251, 191, 36, 0.3) 10%, transparent 20%, transparent 30%, rgba(251, 191, 36, 0.3) 40%, transparent 50%, transparent 60%, rgba(251, 191, 36, 0.3) 70%, transparent 80%, transparent 90%, rgba(251, 191, 36, 0.3) 100%)',
+                                            filter: 'blur(8px)'
+                                        }}
+                                    />
+
+                                    {/* Rotating Sunray Background Layer 2 */}
+                                    <motion.div
+                                        animate={{ rotate: -360 }}
+                                        transition={{
+                                            duration: 12,
+                                            repeat: Infinity,
+                                            ease: 'linear'
+                                        }}
+                                        className="absolute inset-0 -m-12"
+                                        style={{
+                                            background: 'conic-gradient(from 45deg, transparent 0%, rgba(234, 179, 8, 0.4) 8%, transparent 16%, transparent 24%, rgba(234, 179, 8, 0.4) 32%, transparent 40%, transparent 48%, rgba(234, 179, 8, 0.4) 56%, transparent 64%, transparent 72%, rgba(234, 179, 8, 0.4) 80%, transparent 88%)',
+                                            filter: 'blur(12px)'
+                                        }}
+                                    />
+
+                                    {/* Pulsing Outer Glow */}
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.3, 1],
+                                            opacity: [0.3, 0.6, 0.3]
+                                        }}
+                                        transition={{
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            ease: 'easeInOut'
+                                        }}
+                                        className="absolute inset-0 -m-6 rounded-full"
+                                        style={{
+                                            background: 'radial-gradient(circle, rgba(251, 191, 36, 0.6) 0%, transparent 70%)',
+                                            filter: 'blur(20px)'
+                                        }}
+                                    />
+
+                                    {/* Sparkle Effects */}
+                                    {[...Array(6)].map((_, i) => (
+                                        <motion.div
+                                            key={i}
+                                            animate={{
+                                                scale: [0, 1, 0],
+                                                opacity: [0, 1, 0]
+                                            }}
+                                            transition={{
+                                                duration: 2,
+                                                repeat: Infinity,
+                                                delay: i * 0.3,
+                                                ease: 'easeInOut'
+                                            }}
+                                            className="absolute w-2 h-2 bg-yellow-300 rounded-full"
+                                            style={{
+                                                top: `${20 + Math.sin(i * 60 * Math.PI / 180) * 40}%`,
+                                                left: `${50 + Math.cos(i * 60 * Math.PI / 180) * 50}%`,
+                                                boxShadow: '0 0 10px rgba(251, 191, 36, 0.8)'
+                                            }}
+                                        />
+                                    ))}
+
+                                    <motion.button
+                                        onClick={toggleShop}
+                                        animate={{
+                                            boxShadow: [
+                                                '0 0 30px rgba(217, 119, 6, 0.8), 0 0 60px rgba(251, 191, 36, 0.6), 0 0 90px rgba(234, 179, 8, 0.4)',
+                                                '0 0 50px rgba(217, 119, 6, 1), 0 0 80px rgba(251, 191, 36, 0.8), 0 0 120px rgba(234, 179, 8, 0.6)',
+                                                '0 0 30px rgba(217, 119, 6, 0.8), 0 0 60px rgba(251, 191, 36, 0.6), 0 0 90px rgba(234, 179, 8, 0.4)'
+                                            ]
+                                        }}
+                                        transition={{
+                                            duration: 1.5,
+                                            repeat: Infinity,
+                                            repeatType: 'loop'
+                                        }}
+                                        whileHover={{
+                                            scale: 1.1,
+                                            boxShadow: '0 0 60px rgba(217, 119, 6, 1), 0 0 100px rgba(251, 191, 36, 1), 0 0 150px rgba(234, 179, 8, 0.8)'
+                                        }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className="group relative bg-gradient-to-br from-amber-500 via-yellow-400 to-amber-600 hover:from-yellow-300 hover:via-amber-400 hover:to-yellow-500 text-white font-black px-8 py-5 rounded-2xl shadow-2xl transition-all border-4 border-yellow-300 hover:border-yellow-200"
+                                    >
+                                        {/* Animated shine overlay */}
+                                        <motion.div
+                                            animate={{
+                                                x: ['-200%', '200%']
+                                            }}
+                                            transition={{
+                                                duration: 3,
+                                                repeat: Infinity,
+                                                ease: 'linear'
+                                            }}
+                                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent overflow-hidden rounded-2xl"
+                                            style={{ width: '50%' }}
+                                        />
+
+                                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/gold-scale.png')] opacity-20 rounded-xl"></div>
+
+                                        {/* Inner glow */}
+                                        <div className="absolute inset-0 bg-gradient-to-br from-yellow-200/30 via-transparent to-amber-900/30 rounded-xl"></div>
+
+                                        <div className="relative flex items-center gap-3">
+                                            <motion.span
+                                                animate={{
+                                                    scale: [1, 1.2, 1],
+                                                    rotate: [0, 10, -10, 0]
                                                 }}
-                                                className={`text-[9px] px-2 py-1 rounded border transition-all ${isInBand
-                                                        ? 'bg-amber-500 border-amber-400 text-black font-black'
-                                                        : 'bg-slate-800 border-slate-700 text-slate-400'
-                                                    }`}
+                                                transition={{
+                                                    duration: 2,
+                                                    repeat: Infinity,
+                                                    ease: 'easeInOut'
+                                                }}
+                                                className="text-4xl drop-shadow-[0_0_8px_rgba(0,0,0,0.8)]"
                                             >
-                                                {card.name.split(' ')[0]}
-                                            </button>
-                                        );
-                                    })}
+                                                💎
+                                            </motion.span>
+                                            <span className="text-2xl uppercase tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Shop</span>
+                                        </div>
+                                    </motion.button>
+
+                                    {/* NEW Badge - Outside button */}
+                                    <motion.div
+                                        animate={{
+                                            scale: [1, 1.2, 1],
+                                            rotate: [0, 5, -5, 0]
+                                        }}
+                                        transition={{
+                                            duration: 1,
+                                            repeat: Infinity,
+                                            repeatType: 'loop'
+                                        }}
+                                        className="absolute -top-3 -right-3 bg-gradient-to-br from-red-500 to-red-700 text-white text-sm font-black px-3 py-1.5 rounded-full shadow-lg border-2 border-white z-10"
+                                        style={{
+                                            boxShadow: '0 0 20px rgba(239, 68, 68, 0.8)'
+                                        }}
+                                    >
+                                        NEW
+                                    </motion.div>
                                 </div>
                             </div>
                         </div>
-                    )}
-                </div>
-
-                {/* Main Battle Plane */}
-                <div className="flex-grow flex flex-col relative bg-[#08080c]">
-                    {/* Playmat Gradients */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-red-900/5 via-transparent to-blue-900/5 pointer-events-none"></div>
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20 pointer-events-none"></div>
-
-                    {/* Opponent Zone */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-8 border-b border-slate-800/50">
-                        <div className="mb-4 flex flex-col items-center">
-                            <div className="bg-red-900/20 px-4 py-1 rounded-full border border-red-500/20 text-red-500 text-[10px] font-black tracking-widest uppercase mb-2">
-                                Opponent Field
-                            </div>
-                            <div className="flex gap-4 items-center">
-                                <div className="text-2xl font-black text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.5)]">
-                                    {p2.life} ❤️
-                                </div>
-                            </div>
-                        </div>
-                        <BandingBattlefield player={p2} />
-                    </div>
-
-                    {/* Player Zone */}
-                    <div className="flex-1 flex flex-col items-center justify-center p-8">
-                        <BandingBattlefield player={p1} />
-                        <div className="mt-8 flex flex-col items-center">
-                            <div className="flex gap-4 items-center mb-2">
-                                <div className="text-2xl font-black text-blue-500 drop-shadow-[0_0_10px_rgba(59,130,246,0.5)]">
-                                    {p1.life} ❤️
-                                </div>
-                            </div>
-                            <div className="bg-blue-900/20 px-4 py-1 rounded-full border border-blue-500/20 text-blue-500 text-[10px] font-black tracking-widest uppercase">
-                                Your Field
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Active Turn Indicator Float */}
-                    <div className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-0 opacity-10 pointer-events-none transition-all duration-700 ${activePlayerId === 'player1' ? 'rotate-0' : 'rotate-180'}`}>
-                        <Sword size={400} className={activePlayerId === 'player1' ? 'text-blue-500' : 'text-red-500'} />
                     </div>
                 </div>
             </div>
