@@ -9,6 +9,10 @@ import { TurnBanner } from './TurnBanner';
 import { VictoryModal } from './VictoryModal';
 import { TreasureShop } from './TreasureShop';
 import { StartBattleModal } from './StartBattleModal';
+import { MechanicsGuide } from './MechanicsGuide';
+import { CombatTimeline } from './CombatTimeline';
+import { SkipCombatModal } from './SkipCombatModal';
+import { PenaltyNotification } from './PenaltyNotification';
 import { Shuffle, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -21,7 +25,8 @@ export const GameInterface = () => {
         shuffleBoard,
         quizMode,
         toggleQuizMode,
-        toggleShop
+        toggleShop,
+        showStartPrompt
     } = useGameStore();
 
     const player1 = players[0];
@@ -93,14 +98,22 @@ export const GameInterface = () => {
                     <CombatSummaryModal />
                     <TreasureShop />
                     <StartBattleModal />
+                    <SkipCombatModal />
+                    <PenaltyNotification />
 
                     {/* Main Game Plane */}
                     <div className="flex-grow flex flex-col relative overflow-hidden perspective-1000 bg-neutral-900">
 
                         {/* Opponent Zone (Reddish Tint Playmat) */}
-                        <div className="flex-1 flex flex-col relative border-b-2 border-slate-800/50 bg-[#1a1111] shadow-[inset_0_0_100px_rgba(0,0,0,0.8)]">
+                        <div className={`flex-1 flex flex-col relative border-b-2 border-slate-800/50 bg-[#1a1111] shadow-[inset_0_0_100px_rgba(0,0,0,0.8)] transition-all duration-500 ${activePlayerId === player2.id && !showStartPrompt ? 'ring-4 ring-inset ring-amber-500/40' : ''
+                            }`}>
                             {/* Playmat Texture Overlay */}
                             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/dark-matter.png')] pointer-events-none"></div>
+
+                            {/* Turn Indicator Glow */}
+                            {activePlayerId === player2.id && !showStartPrompt && (
+                                <div className="absolute inset-0 border-4 border-amber-500/30 shadow-[inset_0_0_50px_rgba(245,158,11,0.1)] pointer-events-none z-0 animate-pulse"></div>
+                            )}
 
                             {/* Opponent HUD */}
                             <div className="absolute top-4 right-4 z-20">
@@ -114,17 +127,29 @@ export const GameInterface = () => {
                         </div>
 
                         {/* Player Zone (Blueish Tint Playmat) */}
-                        <div className="flex-1 flex flex-col relative bg-[#0f172a] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)]">
+                        <div className={`flex-1 flex flex-col relative bg-[#111827] shadow-[inset_0_0_100px_rgba(0,0,0,0.6)] transition-all duration-500 ${activePlayerId === player1.id && !showStartPrompt ? 'ring-4 ring-inset ring-amber-500/40' : ''
+                            }`}>
                             {/* Playmat Texture Overlay */}
                             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] pointer-events-none"></div>
+
+                            {/* Turn Indicator Glow */}
+                            {activePlayerId === player1.id && !showStartPrompt && (
+                                <div className="absolute inset-0 border-4 border-amber-500/30 shadow-[inset_0_0_50px_rgba(245,158,11,0.1)] pointer-events-none z-0 animate-pulse"></div>
+                            )}
 
                             {/* Player Battlefield (Center-Bottom) */}
                             <div className="flex-grow flex items-start justify-center pt-8 p-4 z-10 w-full">
                                 <Battlefield player={player1} />
                             </div>
 
-                            <div className="absolute bottom-4 left-4 z-20">
+                            <div className="absolute bottom-4 left-4 z-30 flex items-end gap-4">
                                 <PlayerHUD player={player1} isActive={activePlayerId === player1.id} />
+                                <MechanicsGuide />
+                            </div>
+
+                            {/* Combat Timeline Center Piece */}
+                            <div className="absolute bottom-11 left-1/2 -translate-x-1/2 z-20">
+                                <CombatTimeline />
                             </div>
 
                             {/* Treasure Chest Button */}

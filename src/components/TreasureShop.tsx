@@ -102,8 +102,8 @@ const SHOP_ITEMS: ShopItem[] = [
     },
     {
         id: 'life_gain',
-        name: '+2 Life',
-        description: 'Gain 2 life points',
+        name: '+4 Life',
+        description: 'Gain 4 life points',
         cost: 32,
         icon: <HeartPulse className="text-rose-400" />,
         category: 'small'
@@ -119,7 +119,7 @@ const SHOP_ITEMS: ShopItem[] = [
 ];
 
 export const TreasureShop = () => {
-    const { showShop, toggleShop, players, purchaseUpgrade, activePlayerId } = useGameStore();
+    const { showShop, toggleShop, players, purchaseUpgrade, activePlayerId, gambleCount } = useGameStore();
     const player = players.find(p => p.id === 'player1');
     const isPlayerTurn = activePlayerId === 'player1';
 
@@ -178,6 +178,7 @@ export const TreasureShop = () => {
                                         playerGold={player?.gold || 0}
                                         onPurchase={handlePurchase}
                                         isPlayerTurn={isPlayerTurn}
+                                        gambleCount={gambleCount}
                                     />
                                 ))}
                             </div>
@@ -197,6 +198,7 @@ export const TreasureShop = () => {
                                         playerGold={player?.gold || 0}
                                         onPurchase={handlePurchase}
                                         isPlayerTurn={isPlayerTurn}
+                                        gambleCount={gambleCount}
                                     />
                                 ))}
                             </div>
@@ -208,11 +210,14 @@ export const TreasureShop = () => {
     );
 };
 
-const ShopItemCard = ({ item, playerGold, onPurchase, isPlayerTurn }: { item: ShopItem, playerGold: number, onPurchase: (item: ShopItem) => void, isPlayerTurn: boolean }) => {
+const ShopItemCard = ({ item, playerGold, onPurchase, isPlayerTurn, gambleCount }: { item: ShopItem, playerGold: number, onPurchase: (item: ShopItem) => void, isPlayerTurn: boolean, gambleCount: number }) => {
     const canAfford = playerGold >= item.cost;
     const isPremium = item.category === 'big';
+    const isGamble = item.id === 'gamble_spawn';
+    const gambleLimitReached = isGamble && gambleCount >= 3;
+
     // Quick Boosts can be used anytime, Premium Abilities only during player's turn
-    const canPurchase = canAfford && (item.category === 'small' || isPlayerTurn);
+    const canPurchase = canAfford && (item.category === 'small' || isPlayerTurn) && !gambleLimitReached;
 
     return (
         <motion.button
@@ -235,7 +240,13 @@ const ShopItemCard = ({ item, playerGold, onPurchase, isPlayerTurn }: { item: Sh
                     Premium
                 </div>
             )}
-            
+
+            {isGamble && (
+                <div className={`absolute -top-2 -right-2 ${gambleLimitReached ? 'bg-red-600' : 'bg-amber-500'} text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg border border-white/20`}>
+                    {gambleCount}/3 USES
+                </div>
+            )}
+
             <div className="flex items-start gap-3">
                 <div className={`p-2 rounded-lg ${isPremium ? 'bg-purple-950/50' : 'bg-slate-950/50'}`}>
                     {item.icon}
@@ -263,6 +274,14 @@ const ShopItemCard = ({ item, playerGold, onPurchase, isPlayerTurn }: { item: Sh
                 <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-red-950/60 backdrop-blur-sm flex items-center justify-center rounded-xl border-2 border-red-900/50">
                     <div className="bg-red-900/80 px-3 py-2 rounded-lg border border-red-500/50 shadow-lg">
                         <span className="text-red-200 font-bold text-xs uppercase tracking-wide">🔒 Not Enough Gold</span>
+                    </div>
+                </div>
+            )}
+            {gambleLimitReached && (
+                <div className="absolute inset-0 bg-gradient-to-br from-black/80 to-red-950/60 backdrop-blur-sm flex items-center justify-center rounded-xl border-2 border-red-900/50">
+                    <div className="bg-red-900/80 px-3 py-2 rounded-lg border border-red-500/50 shadow-lg text-center">
+                        <span className="text-red-200 font-bold text-xs uppercase tracking-wide block">🚫 LIMIT REACHED</span>
+                        <span className="text-red-300 text-[9px] uppercase tracking-tighter">Only 3 Gambles per match</span>
                     </div>
                 </div>
             )}

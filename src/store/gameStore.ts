@@ -36,20 +36,44 @@ const CARD_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'dama
     { name: "Solemn Simulacrum", manaCost: "{4}", typeLine: "Artifact Creature — Golem", oracleText: "", power: "2", toughness: "2", colors: [], keywords: [], imageUrl: "https://api.scryfall.com/cards/named?exact=Solemn+Simulacrum&format=image&version=normal" }
 ].filter(c => c.typeLine.includes("Creature"));
 
+const COMMANDER_POOL: Omit<Card, 'id' | 'controllerId' | 'ownerId' | 'tapped' | 'damageTaken' | 'plusOneCounters' | 'minusOneCounters' | 'summoningSickness' | 'shieldCounters'>[] = [
+    { name: "Aurelia, the Warleader", manaCost: "{2}{R}{R}{W}{W}", typeLine: "Legendary Creature — Angel", oracleText: "Flying, Vigilance, Haste", power: "3", toughness: "4", colors: ["R", "W"], keywords: ["Flying", "Vigilance", "Haste"], imageUrl: "https://api.scryfall.com/cards/named?exact=Aurelia%2C+the+Warleader&format=image&version=normal" },
+    { name: "Olivia Voldaren", manaCost: "{2}{B}{R}", typeLine: "Legendary Creature — Vampire", oracleText: "Flying", power: "3", toughness: "3", colors: ["B", "R"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Olivia+Voldaren&format=image&version=normal" },
+    { name: "Questing Beast", manaCost: "{2}{G}{G}", typeLine: "Legendary Creature — Beast", oracleText: "Vigilance, Deathtouch, Haste", power: "4", toughness: "4", colors: ["G"], keywords: ["Vigilance", "Deathtouch", "Haste"], imageUrl: "https://api.scryfall.com/cards/named?exact=Questing+Beast&format=image&version=normal" },
+    { name: "Talrand, Sky Summoner", manaCost: "{2}{U}{U}", typeLine: "Legendary Creature — Merfolk Wizard", oracleText: "Flying", power: "2", toughness: "2", colors: ["U"], keywords: ["Flying"], imageUrl: "https://api.scryfall.com/cards/named?exact=Talrand%2C+Sky+Summoner&format=image&version=normal" },
+    { name: "Thalia, Guardian of Thraben", manaCost: "{1}{W}", typeLine: "Legendary Creature — Human Soldier", oracleText: "First Strike", power: "2", toughness: "1", colors: ["W"], keywords: ["First Strike"], imageUrl: "https://api.scryfall.com/cards/named?exact=Thalia%2C+Guardian+of+Thraben&format=image&version=normal" }
+];
 
 const createPlayer = (id: string, name: string): Player => {
+    // Default to a random commander for initial state
+    const randomComm = COMMANDER_POOL[Math.floor(Math.random() * COMMANDER_POOL.length)];
+    const commCard = {
+        ...randomComm,
+        id: `${id}-commander`,
+        controllerId: id,
+        ownerId: id,
+        tapped: false,
+        damageTaken: 0,
+        plusOneCounters: 0,
+        minusOneCounters: 0,
+        summoningSickness: false,
+        shieldCounters: 0
+    };
+
     return {
         id,
         name,
         life: INITIAL_LIFE,
+        commander: commCard,
+        colorIdentity: randomComm.colors,
         commanderDamage: {},
         poisonCounters: 0,
         library: [],
-        hand: [], // No hand
+        hand: [],
         graveyard: [],
         exile: [],
-        commandZone: [],
-        battlefield: [], // Init empty, filled by shuffle
+        commandZone: [commCard],
+        battlefield: [],
         gold: 0,
     };
 };
@@ -94,7 +118,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
     showTurnBanner: null,
     winner: null,
     showStartPrompt: false,
+    showSkipCombatConfirmation: false,
     showShop: false,
+    gambleCount: 0,
+    penaltyNotice: null,
 
     startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => {
         const { addLog, players } = get();
@@ -127,11 +154,29 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     closeQuiz: () => set({ showQuiz: false, pendingOutcome: null }),
     cancelQuiz: () => set({ showQuiz: false, pendingOutcome: null, combatStep: 'declareBlockers' }),
-    closeSummary: () => set({ showSummary: false, lastCombatSummary: null }),
+    closeSummary: () => {
+        set({ showSummary: false, lastCombatSummary: null });
+        // Kick auto-advance back into gear after the summary is dismissed
+        setTimeout(() => {
+            const store = useGameStore.getState();
+            if (store.autoBattle) {
+                store.nextPhase();
+            }
+        }, 300);
+    },
 
-    submitQuiz: (userPredictions, _userTrample) => {
+    submitQuiz: (userPredictions, _userTrample, userDamageGuesses) => {
         const { pendingOutcome, resolveCombat, addLog } = get();
         if (!pendingOutcome) return;
+
+        const getCardName = (id: string) => {
+            const players = get().players;
+            for (const p of players) {
+                const c = p.battlefield.find(card => card.id === id);
+                if (c) return c.name;
+            }
+            return "Unknown";
+        };
 
         const attackersCount = get().attackers.length;
         if (attackersCount === 0) {
@@ -154,20 +199,41 @@ export const useGameStore = create<GameStore>((set, get) => ({
             }
         });
 
-        const incorrectCount = totalChecked - correctCount;
-        const goldEarned = correctCount * 10;
-        const opponentGoldEarned = incorrectCount * 10;
+        const goldEarnedNormal = correctCount * 10;
 
-        addLog(`Quiz submitted! Result: ${correctCount}/${totalChecked} correct.`);
+        // Check damage guesses (Task 3)
+        let damageGoldEarned = 0;
+        if (userDamageGuesses) {
+            Object.entries(userDamageGuesses).forEach(([cardId, guess]) => {
+                const actualDamage = pendingOutcome.damageEvents
+                    .filter(e => e.targetId === cardId)
+                    .reduce((sum, e) => sum + e.damage, 0);
+
+                if (guess === actualDamage) {
+                    damageGoldEarned += 1;
+                    addLog(`🎯 Perfect Damage Assessment: ${getCardName(cardId)}! (+1 Gold)`);
+                }
+            });
+        }
+
+        const goldEarned = goldEarnedNormal + damageGoldEarned;
+        const opponentGoldEarned = (totalChecked - correctCount) * 10;
+
+        addLog(`Quiz submitted! Survival: ${correctCount}/${totalChecked} correct.`);
+        if (damageGoldEarned > 0) {
+            addLog(`📝 Damage Assessment Bonus: +${damageGoldEarned} Gold!`);
+        }
         if (goldEarned > 0) {
-            addLog(`🪙 You earned ${goldEarned} gold!`);
+            addLog(`🪙 Total gold earned: ${goldEarned}`);
         }
         if (opponentGoldEarned > 0) {
             addLog(`💰 Opponent earned ${opponentGoldEarned} gold from your mistakes!`);
         }
 
+
         // Update player gold and apply +1/+1 counters for incorrect answers
         set(state => {
+            const incorrectCount = totalChecked - correctCount;
             const newPlayers = state.players.map(p => {
                 if (p.id === 'player1') {
                     return { ...p, gold: p.gold + goldEarned };
@@ -195,11 +261,16 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 }
                 return p;
             });
-            return { players: newPlayers };
+
+            const penaltyNotice = incorrectCount > 0 ? {
+                message: "Your analysis was wrong! The enemy has gained strength.",
+                visible: true
+            } : state.penaltyNotice;
+
+            return { players: newPlayers, penaltyNotice };
         });
 
-        // After quiz feedback (could be more elaborate, but starting with this)
-        // We'll proceed to resolve.
+        // After quiz feedback
         resolveCombat();
         set({ showQuiz: false, pendingOutcome: null });
     },
@@ -209,19 +280,53 @@ export const useGameStore = create<GameStore>((set, get) => ({
     },
 
     shuffleBoard: () => {
+        // Pick new commanders for each player
+        const shuffledCommanders = [...COMMANDER_POOL].sort(() => 0.5 - Math.random());
+        const p1CommanderRaw = shuffledCommanders[0];
+        const p2CommanderRaw = shuffledCommanders[1];
+
+        const createCommInstance = (raw: any, playerId: string) => ({
+            ...raw,
+            id: `${playerId}-commander-${Date.now()}`,
+            controllerId: playerId,
+            ownerId: playerId,
+            tapped: false,
+            damageTaken: 0,
+            plusOneCounters: 0,
+            minusOneCounters: 0,
+            summoningSickness: false,
+            shieldCounters: 0
+        });
+
+        const p1Commander = createCommInstance(p1CommanderRaw, 'player1');
+        const p2Commander = createCommInstance(p2CommanderRaw, 'player2');
+
+        // Filter CARD_POOL based on Commander colors
+        // A card is legal if all its colors are within the commander's color identity
+        // Colorless cards are always legal
+        const getLegalCards = (identity: string[]) => {
+            return CARD_POOL.filter(card => {
+                if (card.colors.length === 0) return true; // Colorless
+                return card.colors.every(c => identity.includes(c));
+            });
+        };
+
+        const p1Pool = getLegalCards(p1Commander.colors);
+        const p2Pool = getLegalCards(p2Commander.colors);
+
         // Randomly determine how many creatures each player gets (1-5)
         const p1Count = Math.floor(Math.random() * 5) + 1;
         const p2Count = Math.floor(Math.random() * 5) + 1;
 
-        // Pick cards
-        const shuffledPool = [...CARD_POOL].sort(() => 0.5 - Math.random());
-        const p1Cards = shuffledPool.slice(0, p1Count);
-        const p2Cards = shuffledPool.slice(p1Count, p1Count + p2Count);
+        // Shuffle and pick from legal pools
+        const p1Cards = [...p1Pool].sort(() => 0.5 - Math.random()).slice(0, p1Count);
+        const p2Cards = [...p2Pool].sort(() => 0.5 - Math.random()).slice(0, p2Count);
 
         set(state => {
             const newPlayers = state.players.map(p => {
                 const isP1 = p.id === 'player1';
                 const cards = isP1 ? p1Cards : p2Cards;
+                const commander = isP1 ? p1Commander : p2Commander;
 
                 const battlefield = cards.map((c, i) => ({
                     ...c,
@@ -239,6 +344,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 return {
                     ...p,
                     life: INITIAL_LIFE,
+                    commander: commander,
+                    colorIdentity: commander.colors,
+                    commandZone: [commander],
                     hand: [],
                     graveyard: [],
                     exile: [],
@@ -324,6 +432,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         } else {
             addLog(`${defender.name} declares no blocks.`);
         }
+    },
+
+    resetBlockers: () => {
+        set({ blockers: {} });
+        get().addLog("🛡️ Blocking assignments reset.");
     },
 
     performOpponentAttacks: () => {
@@ -423,7 +536,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
         } else {
             // Opponent's Turn (Player is blocking)
             if (combatStep === 'declareBlockers') {
-                hints.push("🛡️ Defend! Click an attacker, then your creature to block.");
+                hints.push("🛡️ Defend! Pick your blocker first, then pick the attacker to intercept.");
 
                 // Calculate incoming damage
                 let totalIncoming = 0;
@@ -811,12 +924,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 let newLife = p.life;
                 let newGold = p.gold;
 
-                if (p.id === attackerPlayerId) newLife += outcome.attackerLifeGained;
+                if (p.id === attackerPlayerId) {
+                    if (outcome.attackerLifeGained > 0) {
+                        newLife += outcome.attackerLifeGained;
+                        addLog(`${p.name} gains ${outcome.attackerLifeGained} life from Lifelink.`);
+                    }
+                }
+
                 if (p.id === defenderPlayerId) {
                     const totalToPlayer = outcome.damageEvents
-                        .filter((e: DamageEvent) => e.targetId === defenderPlayerId)
+                        .filter((e: DamageEvent) => e.targetId === defenderPlayerId && e.type === 'toPlayer')
                         .reduce((sum: number, e: DamageEvent) => sum + e.damage, 0);
-                    newLife -= totalToPlayer;
+
+                    if (totalToPlayer > 0) {
+                        newLife -= totalToPlayer;
+                        addLog(`${p.name} takes ${totalToPlayer} damage. Life: ${newLife}`);
+                    }
+
+                    if (outcome.defenderLifeGained > 0) {
+                        newLife += outcome.defenderLifeGained;
+                        addLog(`${p.name} gains ${outcome.defenderLifeGained} life from Lifelink.`);
+                    }
                 }
 
                 // Award gold for kills
@@ -899,6 +1027,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
         // Log general results
         outcome.explanation.forEach((msg: string) => addLog(msg));
     },
+
+    setShowSkipCombatConfirmation: (show: boolean) => set({ showSkipCombatConfirmation: show }),
+
+    closePenaltyNotice: () => set(state => ({
+        penaltyNotice: state.penaltyNotice ? { ...state.penaltyNotice, visible: false } : null
+    })),
 
     nextPhase: () => {
         const { phase, combatStep, activePlayerId, players, addLog, quizMode, autoBattle, autoBattleTimeout, showQuiz } = get();
@@ -1160,8 +1294,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
 
     declareAttacker: (cardId: string) => {
         const { phase, combatStep, activePlayerId, players, attackers, addLog } = get();
-        if (phase !== 'combat' || combatStep !== 'declareAttackers') {
-            addLog("You can only declare attackers during the Declare Attackers step.");
+        if (phase !== 'combat' || (combatStep !== 'declareAttackers' && combatStep !== 'declareBlockers')) {
+            addLog("You can only declare attackers during the combat phase.");
             return;
         }
 
@@ -1172,7 +1306,32 @@ export const useGameStore = create<GameStore>((set, get) => ({
         if (!card) return;
 
         if (attackers.includes(cardId)) {
-            set({ attackers: attackers.filter(id => id !== cardId) });
+            // UN-DECLARE
+            set(state => {
+                const newAttackers = state.attackers.filter(id => id !== cardId);
+                const newBlockers = { ...state.blockers };
+                delete newBlockers[cardId]; // Clear blockers for this attacker
+
+                return {
+                    attackers: newAttackers,
+                    blockers: newBlockers,
+                    players: state.players.map(p => {
+                        if (p.id !== activePlayerId) return p;
+                        return {
+                            ...p,
+                            battlefield: p.battlefield.map(c => {
+                                if (c.id === cardId) {
+                                    const hasVigilance = c.keywords?.some(k => k.toLowerCase() === 'vigilance');
+                                    // If we are in blockers step, the creature was likely tapped. Untap it.
+                                    return { ...c, tapped: hasVigilance ? false : (combatStep === 'declareBlockers' ? false : c.tapped) };
+                                }
+                                return c;
+                            })
+                        };
+                    })
+                };
+            });
+            addLog(`${card.name} is no longer attacking.`);
             return;
         }
 
@@ -1186,7 +1345,27 @@ export const useGameStore = create<GameStore>((set, get) => ({
             return;
         }
 
-        set({ attackers: [...attackers, cardId] });
+        // DECLARE
+        set(state => {
+            const hasVigilance = card.keywords?.some(k => k.toLowerCase() === 'vigilance');
+            return {
+                attackers: [...state.attackers, cardId],
+                players: state.players.map(p => {
+                    if (p.id !== activePlayerId) return p;
+                    return {
+                        ...p,
+                        battlefield: p.battlefield.map(c => {
+                            if (c.id === cardId && !hasVigilance && combatStep === 'declareBlockers') {
+                                // If joining attack LATE during blockers step, tap now.
+                                return { ...c, tapped: true };
+                            }
+                            return c;
+                        })
+                    };
+                })
+            };
+        });
+        addLog(`${card.name} joins the attack!`);
     },
 
     declareBlocker: (attackerId: string, blockerId: string) => {
@@ -1239,7 +1418,53 @@ export const useGameStore = create<GameStore>((set, get) => ({
             };
         });
     },
+    unassignBlocker: (blockerId: string) => {
+        const { phase, combatStep } = get();
+        if (phase !== 'combat' || combatStep !== 'declareBlockers') return;
 
+        set(state => {
+            const newBlockers = { ...state.blockers };
+            let found = false;
+            Object.keys(newBlockers).forEach(attackerId => {
+                if (newBlockers[attackerId].includes(blockerId)) {
+                    newBlockers[attackerId] = newBlockers[attackerId].filter(id => id !== blockerId);
+                    found = true;
+                }
+            });
+
+            if (found) {
+                return { blockers: newBlockers };
+            }
+            return state;
+        });
+    },
+
+    reorderBlockers: (attackerId, blockerId, direction) => {
+        set(state => {
+            const list = [...(state.blockers[attackerId] || [])];
+            const index = list.indexOf(blockerId);
+            if (index === -1) return state;
+
+            const newIndex = direction === 'up' ? index - 1 : index + 1;
+            if (newIndex < 0 || newIndex >= list.length) return state;
+
+            // Swap
+            [list[index], list[newIndex]] = [list[newIndex], list[index]];
+
+            return {
+                blockers: {
+                    ...state.blockers,
+                    [attackerId]: list
+                }
+            };
+        });
+
+        // Re-calc outcome after state is committed (if quiz is open)
+        if (get().showQuiz) {
+            const outcome = get().calculateCombatOutcome();
+            set({ pendingOutcome: outcome });
+        }
+    },
     toggleShop: () => {
         set(state => ({ showShop: !state.showShop }));
     },
@@ -1257,8 +1482,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
             let updatedPlayers = [...state.players];
 
             if (upgrade === 'spawn_creature') {
-                // Spawn a random creature for player1
-                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                // Spawn a random creature for player1 that matches color identity
+                const legalPool = CARD_POOL.filter(card => {
+                    if (card.colors.length === 0) return true; // Colorless
+                    return card.colors.every(c => player.colorIdentity.includes(c));
+                });
+                const randomCard = legalPool[Math.floor(Math.random() * legalPool.length)] || CARD_POOL[0];
                 const newCreature = {
                     ...randomCard,
                     id: `player1-creature-${Date.now()}-${Math.random()}`,
@@ -1299,10 +1528,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
                                 }
                             }
                             return c;
-                        }).filter(c => {
-                            const baseToughness = parseInt(c.toughness || '0');
-                            const netToughness = baseToughness + (c.plusOneCounters || 0) - (c.minusOneCounters || 0);
-                            return netToughness > 0;
                         });
 
                         return {
@@ -1322,10 +1547,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 }
             } else if (upgrade === 'life_gain') {
                 updatedPlayers = state.players.map(p =>
-                    p.id === 'player1' ? { ...p, life: p.life + 2 } : p
+                    p.id === 'player1' ? { ...p, life: p.life + 4 } : p
                 );
-                addLog(`💖 You gained 2 life!`);
+                addLog(`💖 You gained 4 life!`);
             } else if (upgrade === 'gamble_spawn') {
+                if (state.gambleCount >= 3) {
+                    addLog("⚠️ High Risk Gamble can only be used 3 times per game!");
+                    return state;
+                }
                 // Spawn a creature for opponent with summoning sickness
                 const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
                 const newCreature = {
@@ -1360,8 +1589,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 });
 
                 addLog(`🎲 GAMBLE! Spawned ${newCreature.name} for opponent - you earned ${goldEarned} gold!`);
-                // No cost deduction since it's free, but we still return here to skip the final gold deduction
-                return { players: updatedPlayers };
+                // No cost deduction, but we return the updated players AND increment the count
+                return { players: updatedPlayers, gambleCount: state.gambleCount + 1 };
             } else if (upgrade === 'shield_counter') {
                 const targetCreatures = state.players.find(pl => pl.id === 'player1')?.battlefield || [];
 
@@ -1453,8 +1682,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
             let updatedPlayers = [...state.players];
 
             if (selectedItem.id === 'spawn_creature') {
-                // Spawn a random creature for player2
-                const randomCard = CARD_POOL[Math.floor(Math.random() * CARD_POOL.length)];
+                // Spawn a random creature for player2 that matches color identity
+                const identity = aiPlayer.colorIdentity;
+                const legalPool = CARD_POOL.filter(card => {
+                    if (card.colors.length === 0) return true; // Colorless
+                    return card.colors.every(c => identity.includes(c));
+                });
+                const randomCard = legalPool[Math.floor(Math.random() * legalPool.length)] || CARD_POOL[0];
                 const newCreature = {
                     ...randomCard,
                     id: `player2-creature-${Date.now()}-${Math.random()}`,

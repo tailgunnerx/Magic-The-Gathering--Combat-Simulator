@@ -25,27 +25,55 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
 
     const handleCardClick = (cardId: string) => {
         const isAttacker = activePlayerId === player.id;
+        const isHumanPlayer = player.id === 'player1';
+        const isSelected = selectedCardId === cardId;
 
         if (phase === 'combat' && combatStep === 'declareAttackers') {
-            // ONLY the active player can declare/deselect attackers, 
-            // and we only allow manual control for Player 1 (Human).
-            if (isAttacker && activePlayerId === 'player1') {
+            if (isAttacker && isHumanPlayer) {
                 declareAttacker(cardId);
             }
         }
 
         if (phase === 'combat' && combatStep === 'declareBlockers') {
-            // New Intuitive Flow: Select Attacker (Opponent Card) then Blocker (My Card)
-            if (isAttacker) {
-                // I clicked the active player's card (The Attacker)
-                selectCard(cardId);
+            // New Flow: Blocker (My Card) -> Attacker (Their Card)
+            if (!isAttacker) {
+                // I clicked MY card (Potential Blocker)
+                const isAlreadyBlocking = Object.values(blockers).some(list => list.includes(cardId));
+
+                if (isAlreadyBlocking) {
+                    // UNDO: Clicked a card that is already blocking
+                    const { unassignBlocker } = useGameStore.getState();
+                    unassignBlocker(cardId);
+                    selectCard(null);
+                } else {
+                    // SELECT: Mark this card as the one who wants to block
+                    selectCard(cardId);
+                    addLog("Select an attacker for this creature to block.");
+                }
             }
             else {
-                // I clicked my card (The Blocker)
-                if (selectedCardId) {
-                    declareBlocker(selectedCardId, cardId);
+                // I clicked an Attacking card (The Attacker)
+                if (isSelected) {
+                    // Toggling OFF an attacker
+                    declareAttacker(cardId);
+                    selectCard(null);
+                } else if (selectedCardId) {
+                    // Check if selectedCardId is actually one of my creatures
+                    const myBattlefield = useGameStore.getState().players.find(p => p.id === 'player1')?.battlefield || [];
+                    const isMyCard = myBattlefield.some(c => c.id === selectedCardId);
+
+                    if (isMyCard) {
+                        declareBlocker(cardId, selectedCardId);
+                        selectCard(null); // Clear selection after assignment
+                    } else {
+                        addLog("Pick your blocker first, then pick the attacker.");
+                        selectCard(null);
+                    }
+                } else if (isAttacker) {
+                    // This is my own card, and it is attacking. Allow toggle off.
+                    declareAttacker(cardId);
                 } else {
-                    addLog("Select an attacker first, then click your creature to block it.");
+                    addLog("Pick your blocker first, then pick the attacker to intercept.");
                 }
             }
         }
@@ -102,6 +130,12 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
                                     isBlocking={isBlocking}
                                     isLocked={isLocked}
                                     blockIndicatorColor={blockIndicatorColor}
+                                    blockOrder={(() => {
+                                        if (!isBlocking) return undefined;
+                                        const attackerId = Object.keys(blockers).find(attId => blockers[attId].includes(card.id));
+                                        if (!attackerId) return undefined;
+                                        return blockers[attackerId].indexOf(card.id) + 1;
+                                    })()}
                                     className={extraClass}
                                 />
                             </div>

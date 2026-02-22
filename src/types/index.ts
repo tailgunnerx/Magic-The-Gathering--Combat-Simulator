@@ -27,6 +27,8 @@ export interface Player {
     id: string;
     name: string;
     life: number;
+    commander?: Card;
+    colorIdentity: string[];
     commanderDamage: Record<string, number>; // Commander ID -> Damage dealt
     poisonCounters: number;
     library: Card[];
@@ -96,22 +98,32 @@ export interface GameState {
     log: string[];
     winner: string | null;
     showStartPrompt: boolean;
-
+    showSkipCombatConfirmation: boolean;
     showShop: boolean;
+    gambleCount: number;
+    penaltyNotice: { message: string, visible: boolean } | null;
 
     // Actions
     addLog: (message: string) => void;
     toggleQuizMode: () => void;
-    submitQuiz: (userPredictions: Record<string, 'Survives' | 'Dies'>, userTrample?: Record<string, number>) => void;
+    submitQuiz: (
+        userPredictions: Record<string, 'Survives' | 'Dies'>,
+        userTrample?: Record<string, number>,
+        userDamageGuesses?: Record<string, number>
+    ) => void;
     closeQuiz: () => void;
     cancelQuiz: () => void;
     performOpponentAttacks: () => void;
+    performOpponentBlocks: () => void;
+    resetBlockers: () => void;
     getCombatHints: () => string[];
     shuffleBoard: () => void;
     startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => void;
+    setShowSkipCombatConfirmation: (show: boolean) => void;
     toggleShop: () => void;
     purchaseUpgrade: (upgrade: string, cost: number) => void;
     performAIShopPurchases: () => void;
+    closePenaltyNotice: () => void;
 
     // Actions
     nextPhase: () => void;
@@ -122,4 +134,6 @@ export interface GameState {
     castSpell: (playerId: string, cardId: string) => void;
     declareAttacker: (cardId: string) => void;
     declareBlocker: (attackerId: string, blockerId: string) => void;
+    unassignBlocker: (blockerId: string) => void;
+    reorderBlockers: (attackerId: string, blockerId: string, direction: 'up' | 'down') => void;
 }

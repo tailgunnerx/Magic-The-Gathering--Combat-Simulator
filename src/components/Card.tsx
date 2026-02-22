@@ -11,6 +11,7 @@ interface CardProps {
     isBlocking?: boolean;
     isLocked?: boolean;
     blockIndicatorColor?: string; // CSS class for indicator color
+    blockOrder?: number; // The order in which this blocker intercepts
 }
 
 const KEYWORD_COLORS: Record<string, string> = {
@@ -26,7 +27,7 @@ const KEYWORD_COLORS: Record<string, string> = {
     'Protection': 'bg-indigo-500 text-white',
 };
 
-export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLocked, blockIndicatorColor }: CardProps) => {
+export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLocked, blockIndicatorColor, blockOrder }: CardProps) => {
     const isTapped = card.tapped;
     const basePower = parseInt(card.power || '0');
     const baseToughness = parseInt(card.toughness || '0');
@@ -41,10 +42,10 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                 isAttacking ? "ring-4 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.6)]" :
                     isBlocking ? "ring-4 ring-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.6)]" :
                         "hover:shadow-2xl",
-                isLocked && "grayscale opacity-60 scale-95 border-2 border-slate-700 pointer-events-none",
+                isLocked && "opacity-70 scale-95 border-2 border-slate-700",
                 className
             )}
-            onClick={isLocked ? undefined : onClick}
+            onClick={onClick}
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{
                 scale: isAttacking ? 1.1 : isLocked ? 0.95 : 1,
@@ -95,8 +96,14 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                 {card.summoningSickness && !card.keywords?.includes('Haste') && (
                     <motion.div
                         initial={{ scale: 0, rotate: -10 }}
-                        animate={{ scale: 1, rotate: 0 }}
-                        className="absolute top-2 right-2 bg-yellow-500 border-2 border-yellow-300 text-black font-black px-2 py-1 rounded-lg shadow-lg z-30 text-[10px] uppercase tracking-wide"
+                        animate={{
+                            scale: 1,
+                            rotate: isTapped ? -90 : 0
+                        }}
+                        className={clsx(
+                            "absolute bg-yellow-500 border-2 border-yellow-300 text-black font-black px-2 py-1 rounded-lg shadow-lg z-30 text-[10px] uppercase tracking-wide",
+                            isTapped ? "left-1 top-1/2 -translate-y-1/2" : "top-2 right-2"
+                        )}
                     >
                         😴 Summoning Sickness
                     </motion.div>
@@ -106,8 +113,14 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                 {(card.plusOneCounters || 0) > 0 && (
                     <motion.div
                         initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute bottom-2 left-2 bg-emerald-600 border-2 border-white text-white font-bold px-2 py-1 rounded-lg shadow-lg z-30"
+                        animate={{
+                            scale: 1,
+                            rotate: isTapped ? -90 : 0
+                        }}
+                        className={clsx(
+                            "absolute bg-emerald-600 border-2 border-white text-white font-bold px-2 py-1 rounded-lg shadow-lg z-30",
+                            isTapped ? "bottom-2 right-2" : "bottom-2 left-2"
+                        )}
                     >
                         <span className="text-sm">+{card.plusOneCounters}/+{card.plusOneCounters}</span>
                     </motion.div>
@@ -117,8 +130,16 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                 {(card.shieldCounters || 0) > 0 && (
                     <motion.div
                         initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute top-2 right-2 bg-cyan-500 border-2 border-white text-white font-bold px-2 py-1 rounded-full shadow-lg z-30 flex items-center gap-1"
+                        animate={{
+                            scale: 1,
+                            rotate: isTapped ? -90 : 0,
+                            x: isTapped ? -4 : 0,
+                            y: isTapped ? 10 : 0
+                        }}
+                        className={clsx(
+                            "absolute bg-cyan-500 border-2 border-white text-white font-bold px-2 py-1 rounded-full shadow-lg z-30 flex items-center gap-1",
+                            isTapped ? "left-1 top-1/2 -translate-y-1/2" : "top-2 right-2"
+                        )}
                     >
                         <span className="text-xs">🛡️</span>
                         <span className="text-sm">{card.shieldCounters}</span>
@@ -129,8 +150,14 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                 {card.damageTaken > 0 && (
                     <motion.div
                         initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="absolute bottom-2 right-2 bg-red-600 border-2 border-white text-white font-bold px-2 py-1 rounded-lg shadow-lg z-30 flex items-center gap-1"
+                        animate={{
+                            scale: 1,
+                            rotate: isTapped ? -90 : 0
+                        }}
+                        className={clsx(
+                            "absolute bg-red-600 border-2 border-white text-white font-bold px-2 py-1 rounded-lg shadow-lg z-30 flex items-center gap-1",
+                            isTapped ? "bottom-2 left-2" : "bottom-2 right-2"
+                        )}
                     >
                         <span className="text-xs opacity-80">{power}/</span>
                         <span className="text-base">{currentToughness}</span>
@@ -164,13 +191,29 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
                     {blockIndicatorColor && (
                         <motion.div
                             initial={{ scale: 0, y: 10 }}
-                            animate={{ scale: 1, y: 0 }}
+                            animate={{
+                                scale: 1,
+                                y: 0,
+                                rotate: isTapped ? -90 : 0
+                            }}
                             className={clsx(
-                                "absolute top-2 right-2 w-10 h-10 rounded-full border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.4)] z-40 flex items-center justify-center backdrop-blur-md",
+                                "absolute w-10 h-10 rounded-full border-2 border-white shadow-[0_0_15px_rgba(255,255,255,0.4)] z-40 flex items-center justify-center backdrop-blur-md",
+                                isTapped ? "left-1 top-1/2 -translate-y-1/2" : "top-2 right-2",
                                 blockIndicatorColor
                             )}
                         >
                             <Shield className="text-white fill-white/20" size={20} strokeWidth={2.5} />
+                        </motion.div>
+                    )}
+
+                    {/* Block Order Badge */}
+                    {isBlocking && blockOrder !== undefined && (
+                        <motion.div
+                            initial={{ scale: 0, y: 10 }}
+                            animate={{ scale: 1, y: 0 }}
+                            className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-blue-600 border-2 border-white text-white w-8 h-8 rounded-full flex items-center justify-center font-black text-xs z-50 shadow-lg"
+                        >
+                            {blockOrder}
                         </motion.div>
                     )}
                 </AnimatePresence>
