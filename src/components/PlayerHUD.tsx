@@ -22,10 +22,30 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
         }
     };
 
+    const isLowLife = player.life < 15;
+
+    // Shared heartbeat animation for low-life state
+    const lowLifeAnimation = isLowLife ? {
+        animate: {
+            boxShadow: [
+                '0 0 10px rgba(220, 38, 38, 0.2), inset 0 0 20px rgba(220, 38, 38, 0.05)',
+                '0 0 25px rgba(220, 38, 38, 0.6), inset 0 0 40px rgba(220, 38, 38, 0.15)',
+                '0 0 10px rgba(220, 38, 38, 0.2), inset 0 0 20px rgba(220, 38, 38, 0.05)'
+            ],
+            borderColor: [
+                'rgba(220, 38, 38, 0.3)',
+                'rgba(220, 38, 38, 0.8)',
+                'rgba(220, 38, 38, 0.3)'
+            ]
+        },
+        transition: { duration: 1.2, repeat: Infinity, ease: 'easeInOut' as const }
+    } : {};
+
     if (isCollapsed) {
         return (
-            <div
-                className={`p-2 px-3 rounded-2xl border-2 transition-all duration-500 shadow-2xl backdrop-blur-md cursor-pointer select-none hover:bg-white/5 ${isActive ? 'border-yellow-500 bg-slate-800/90' : 'border-slate-700 bg-slate-900/80'}`}
+            <motion.div
+                {...lowLifeAnimation}
+                className={`p-2 px-3 rounded-2xl border-2 transition-all duration-500 shadow-2xl backdrop-blur-md cursor-pointer select-none hover:bg-white/5 ${isLowLife ? 'border-red-600/50 bg-red-950/40' : isActive ? 'border-yellow-500 bg-slate-800/90' : 'border-slate-700 bg-slate-900/80'}`}
                 onClick={() => setIsCollapsed(false)}
             >
                 <div className="flex items-center gap-2">
@@ -40,12 +60,15 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                     </div>
                     <ChevronUp size={14} className="text-slate-500 ml-1" />
                 </div>
-            </div>
+            </motion.div>
         );
     }
 
     return (
-        <div className={`p-4 rounded-2xl border-2 transition-all duration-500 shadow-2xl backdrop-blur-md ${isActive ? 'border-yellow-500 bg-slate-800/90' : 'border-slate-700 bg-slate-900/80'}`}>
+        <motion.div
+            {...lowLifeAnimation}
+            className={`p-4 rounded-2xl border-2 transition-all duration-500 shadow-2xl backdrop-blur-md ${isLowLife ? 'border-red-600/50 bg-red-950/40' : isActive ? 'border-yellow-500 bg-slate-800/90' : 'border-slate-700 bg-slate-900/80'}`}
+        >
             <div className="flex justify-between items-start mb-3">
                 <h2 className="text-xl font-black text-white tracking-tight uppercase italic">{player.name}</h2>
                 <div className="flex items-center gap-2">
@@ -125,6 +148,6 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                     )}
                 </div>
             </div>
-        </div>
+        </motion.div>
     );
 };
