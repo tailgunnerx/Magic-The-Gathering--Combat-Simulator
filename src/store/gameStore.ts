@@ -156,10 +156,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
     cancelQuiz: () => set({ showQuiz: false, pendingOutcome: null, combatStep: 'declareBlockers' }),
     closeSummary: () => {
         set({ showSummary: false, lastCombatSummary: null });
-        // Kick auto-advance back into gear after the summary is dismissed
+        // Always advance past the combatDamage step after summary is dismissed
         setTimeout(() => {
             const store = useGameStore.getState();
-            if (store.autoBattle) {
+            // Only advance if we're still stuck on combatDamage (guard against double-advance)
+            if (store.phase === 'combat' && store.combatStep === 'combatDamage') {
                 store.nextPhase();
             }
         }, 300);
@@ -364,6 +365,13 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 activePlayerId: 'player1',
                 winner: null,
                 showStartPrompt: true,
+                gambleCount: 0,
+                autoBattle: true,
+                autoBattleTimeout: null,
+                showSummary: false,
+                showQuiz: false,
+                pendingOutcome: null,
+                penaltyNotice: null,
                 log: ["--- NEW BATTLE PREPARED ---", `Player 1 spawns with ${p1Count} creatures.`, `Player 2 spawns with ${p2Count} creatures.`, "Who should attack first?"]
             };
         });
