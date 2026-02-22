@@ -17,27 +17,32 @@ An interactive combat simulator for Magic: The Gathering built with React, TypeS
 
 ### Combat Mechanics
 - **First Strike & Double Strike**: Damage dealt in separate combat steps
-- **Deathtouch**: Any amount of damage is lethal
+- **Deathtouch**: Any amount of damage is lethal (fully implemented logic)
 - **Trample**: Excess damage carries over to defending player
 - **Flying & Reach**: Flying creatures can only be blocked by creatures with flying or reach
 - **Lifelink**: Damage dealt also gains life
 - **Vigilance**: Creatures don't tap when attacking
 - **Haste**: Attack immediately without summoning sickness
+- **Shield Counters**: One-time protection against death or damage (removes a counter instead of dying)
 
 ### 🪙 Gold Economy System
 Earn gold through gameplay and spend it in the treasure shop to gain powerful advantages!
 
 **Ways to Earn Gold:**
-- **+10 Gold** for each correct answer in combat quiz
-- **+25 Gold** for each opponent creature you destroy
+- **+50 Gold**: Victory Reward for winning a battle! 🏆
+- **+25 Gold**: For each opponent creature you destroy.
+- **+10 Gold**: For each correct survival prediction in the combat quiz.
+- **+1 Gold**: For every point of damage dealt to the opponent player.
+- **+1 Gold**: For "Perfect Damage Assessment" in the quiz.
 
 **Treasure Shop** (only available during your turn):
 
 #### Quick Boosts
 - **+1/+1 Counter** (24g) - Permanently boost a random creature's power and toughness
-- **+2 Life** (32g) - Gain 2 life points
 - **-1/-1 Counter** (64g) - Weaken opponent's creature (may kill it if toughness reaches 0)
+- **+4 Life** (32g) - Gain 4 life points
 - **Summon Creature** (80g) - Add a random creature to your battlefield
+- **Gamble Spawn** (Free) - Earn random gold (up to 200) but spawn a random enemy creature! (Max 3 per game)
 
 #### Premium Abilities
 Grant powerful keywords to your creatures:
@@ -48,6 +53,7 @@ Grant powerful keywords to your creatures:
 - **Deathtouch** (64g) - Any damage is lethal
 - **First Strike** (68g) - Deal damage before normal combat
 - **Double Strike** (72g) - Deal damage in both first strike AND normal combat
+- **Shield Counter** (85g) - Grants one-time protection against death
 
 ### 📚 Combat Quiz Mode
 **Always Active** - Learn by predicting combat outcomes!
@@ -58,7 +64,10 @@ Before damage is dealt, you'll be asked to predict whether each creature will su
 - Keywords and abilities affecting combat
 - Step-by-step explanation of damage resolution
 
-**Correct predictions earn you 10 gold each!** ✨
+**Rewards & Penalties:**
+- **Correct predictions** earn you 10 gold each! ✨
+- **Perfect Damage Assessment** earns an extra 1 gold per card.
+- **❌ Mistake Penalty**: If you guess wrong, the AI earns 10 gold AND a random surviving enemy creature receives a permanent +1/+1 counter! Choose wisely.
 
 ### 🎲 Turn Order Selection
 At the start of each battle, choose who goes first:
@@ -75,11 +84,13 @@ At the start of each battle, choose who goes first:
 - **Artifact Creatures**: Steel Overseer, Solemn Simulacrum
 - And many more!
 
-### 🎨 Beautiful UI
-- **Animated Cards**: Smooth transitions and hover effects using Framer Motion
-- **Casino-Style Shop**: Ultra-flashy treasure shop with rotating sunrays and pulsing effects
-- **Visual Feedback**: Color-coded rings, damage indicators, and status effects
-- **Gold Display**: Animated gold pouch showing your current treasure
+### 🎨 Beautiful UI & UX
+- **AI Always On**: No more manual prompting - the AI is part of the natural game flow, declaring attacks and blocks automatically.
+- **Combat Wizard**: A sleek, repositioned interface that guides you through every step of combat without obstructing the battlefield.
+- **Animated Cards**: Smooth transitions, tapping rotations, and hover effects using Framer Motion.
+- **Casino-Style Shop**: Ultra-flashy treasure shop with rotating sunrays and pulsing effects.
+- **Visual Feedback**: Color-coded rings, damage indicators, and status effects.
+- **Gold Display**: Animated gold pouch showing your current treasure.
 
 ## 🚀 Getting Started
 
@@ -139,7 +150,7 @@ npm run preview
 - **Vite 7** - Fast build tool and dev server
 - **Zustand** - Lightweight state management
 - **Framer Motion** - Smooth animations
-- **Tailwind CSS** - Utility-first styling
+- **Vanilla CSS** - Premium styling and layout
 - **Lucide React** - Beautiful icons
 
 ## 📁 Project Structure
