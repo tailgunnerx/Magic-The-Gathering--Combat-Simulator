@@ -152,9 +152,15 @@ export const TreasureShop = () => {
                                 <span className="text-4xl">💰</span>
                                 Treasure Shop
                             </h2>
-                            <div className="flex items-center gap-2 mt-2">
-                                <Coins className="text-yellow-300" size={20} />
-                                <span className="text-yellow-200 font-bold text-lg">Your Gold: {player?.gold || 0}</span>
+                            <div className="flex items-center gap-4 mt-2">
+                                <div className="flex items-center gap-2">
+                                    <Heart className="text-red-400" size={20} fill="currentColor" />
+                                    <span className="text-red-200 font-bold text-lg">{player?.life || 0}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Coins className="text-yellow-300" size={20} />
+                                    <span className="text-yellow-200 font-bold text-lg">Your Gold: {player?.gold || 0}</span>
+                                </div>
                             </div>
                         </div>
                         <button

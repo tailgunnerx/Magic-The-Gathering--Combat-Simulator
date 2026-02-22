@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { Player } from '../types';
 import { Heart, Skull, Shield, Coins, ChevronDown, ChevronUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface PlayerHUDProps {
     player: Player;
@@ -34,12 +34,10 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                         <Heart size={14} fill="currentColor" />
                         <span className="text-lg font-black">{player.life}</span>
                     </div>
-                    {player.id === 'player1' && (
-                        <div className="flex items-center gap-1 text-yellow-400">
-                            <Coins size={14} fill="currentColor" />
-                            <span className="text-lg font-black">{player.gold}</span>
-                        </div>
-                    )}
+                    <div className="flex items-center gap-1 text-yellow-400">
+                        <Coins size={14} fill="currentColor" />
+                        <span className="text-lg font-black">{player.gold}</span>
+                    </div>
                     <ChevronUp size={14} className="text-slate-500 ml-1" />
                 </div>
             </div>
@@ -82,19 +80,17 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                         <span className="text-2xl font-black tracking-tighter">{player.life}</span>
                     </div>
 
-                    {player.id === 'player1' && (
-                        <motion.div
-                            animate={{
-                                scale: [1, 1.05, 1],
-                                filter: ['drop-shadow(0 0 2px rgba(234, 179, 8, 0.4))', 'drop-shadow(0 0 12px rgba(234, 179, 8, 0.8))', 'drop-shadow(0 0 2px rgba(234, 179, 8, 0.4))']
-                            }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                            className="flex items-center gap-2.5 text-yellow-400 bg-yellow-400/10 px-3 py-1.5 rounded-xl border border-yellow-400/20 shadow-lg"
-                        >
-                            <Coins size={20} fill="currentColor" className="drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" />
-                            <span className="text-2xl font-black tracking-tighter">{player.gold}</span>
-                        </motion.div>
-                    )}
+                    <motion.div
+                        animate={{
+                            scale: [1, 1.05, 1],
+                            filter: ['drop-shadow(0 0 2px rgba(234, 179, 8, 0.4))', 'drop-shadow(0 0 12px rgba(234, 179, 8, 0.8))', 'drop-shadow(0 0 2px rgba(234, 179, 8, 0.4))']
+                        }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                        className="flex items-center gap-2.5 text-yellow-400 bg-yellow-400/10 px-3 py-1.5 rounded-xl border border-yellow-400/20 shadow-lg"
+                    >
+                        <Coins size={20} fill="currentColor" className="drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" />
+                        <span className="text-2xl font-black tracking-tighter">{player.gold}</span>
+                    </motion.div>
                 </div>
 
                 {/* Commander Info Bar */}

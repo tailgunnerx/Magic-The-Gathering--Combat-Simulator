@@ -963,6 +963,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     newGold += opponentGoldFromKills;
                 }
 
+                // Award gold for damage dealt to opponent (1 gold per damage point)
+                if (p.id === attackerPlayerId) {
+                    const damageToDefender = outcome.damageEvents
+                        .filter((e: DamageEvent) => e.targetId === defenderPlayerId && e.type === 'toPlayer')
+                        .reduce((sum: number, e: DamageEvent) => sum + e.damage, 0);
+                    if (damageToDefender > 0) {
+                        newGold += damageToDefender;
+                        addLog(`🪙 ${p.name} earns ${damageToDefender} gold from combat damage!`);
+                    }
+                }
+
                 const updatedBattlefield = p.battlefield.map(card => {
                     const damageTaken = outcome.damageEvents
                         .filter((e: DamageEvent) => e.targetId === card.id)
@@ -1619,10 +1630,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
                     addLog(`🛡️ Shield counter applied to ${randomCreature.name}!`);
                 }
             } else {
+                // Keyword upgrade (Flying, Trample, etc.)
+                const currentPlayer = state.players.find(p => p.id === 'player1');
+                const allCreatures = currentPlayer?.battlefield || [];
+                const availableCreatures = allCreatures.filter(c => !c.keywords.includes(upgrade));
+
+                if (allCreatures.length > 0 && availableCreatures.length === 0) {
+                    addLog(`⚠️ All your creatures already have ${upgrade}!`);
+                    return state; // Don't charge gold
+                }
+
                 updatedPlayers = state.players.map(p => {
                     if (p.id !== 'player1') return p;
 
-                    const availableCreatures = p.battlefield.filter(c => !c.keywords.includes(upgrade));
                     if (availableCreatures.length > 0) {
                         const randomCreature = availableCreatures[Math.floor(Math.random() * availableCreatures.length)];
                         const newBattlefield = p.battlefield.map(c => {
