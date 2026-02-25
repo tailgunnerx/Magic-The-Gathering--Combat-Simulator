@@ -14,7 +14,6 @@ import { CombatTimeline } from './CombatTimeline';
 import { SkipCombatModal } from './SkipCombatModal';
 import { PenaltyNotification } from './PenaltyNotification';
 import { SettingsMenu } from './SettingsMenu';
-import { LivePlayersIndicator } from './LivePlayersIndicator';
 import { Shuffle, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -83,10 +82,7 @@ export const GameInterface = () => {
                         </div>
                     </div>
 
-                    <div className="h-4 w-px bg-slate-700/50 mx-1"></div>
-                    <LivePlayersIndicator />
-
-                    <div className="h-8 w-px bg-slate-700 mx-1"></div>
+                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
                     <SettingsMenu />
                 </div>
             </div >
