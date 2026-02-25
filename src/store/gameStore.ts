@@ -128,7 +128,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
     penaltyNotice: null,
     isAdminMode: false,
 
-    enableAdminMode: () => set({ isAdminMode: true }),
+    enableAdminMode: () => set(state => ({
+        isAdminMode: true,
+        players: state.players.map(p =>
+            p.id === 'player1' ? { ...p, gold: 999999999 } : p
+        )
+    })),
     closeStartPrompt: () => set({ showStartPrompt: false }),
 
     startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => {
