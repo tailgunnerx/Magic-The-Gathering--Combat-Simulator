@@ -75,8 +75,21 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
     };
 
     return (
-        // Changed to simple flex row, no wrapping, focused on "line" layout
-        <div className="flex gap-6 items-center justify-center min-h-[300px] px-8 w-full max-w-7xl mx-auto">
+        // Added smooth horizontal scrolling logic when there are 6+ cards
+        <div
+            className={`flex gap-6 items-center min-h-[320px] px-8 w-full max-w-[95vw] mx-auto overflow-x-auto overflow-y-hidden py-4 
+            [&::-webkit-scrollbar]:h-3 
+            [&::-webkit-scrollbar-track]:bg-black/40 
+            [&::-webkit-scrollbar-track]:rounded-full 
+            [&::-webkit-scrollbar-thumb]:bg-slate-500/80 
+            hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 
+            [&::-webkit-scrollbar-thumb]:rounded-full
+            `}
+            style={{
+                // Prevents the "clipped left" bug of flexbox when items overflow a centered container
+                justifyContent: player.battlefield.length >= 6 ? 'flex-start' : 'center'
+            }}
+        >
             <AnimatePresence>
                 {player.battlefield.length === 0 ? (
                     <div className="text-slate-600 font-mono text-sm border-2 border-dashed border-slate-800 rounded-lg p-6 opacity-50">
