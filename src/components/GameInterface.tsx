@@ -28,7 +28,8 @@ export const GameInterface = () => {
         quizMode,
         toggleQuizMode,
         toggleShop,
-        showStartPrompt
+        showStartPrompt,
+        isAdminMode
     } = useGameStore();
 
     const player1 = players[0];
@@ -37,8 +38,13 @@ export const GameInterface = () => {
     return (
         <div className="h-screen bg-neutral-950 text-white flex flex-col font-sans overflow-hidden">
             <VictoryModal />
+            {isAdminMode && (
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[100] pointer-events-none">
+                    <span className="text-red-600 font-bold tracking-widest text-xl drop-shadow-[0_0_8px_rgba(220,38,38,0.8)] uppercase">Admin Mode</span>
+                </div>
+            )}
             {/* Top Bar - Minimal */}
-            <div className="bg-neutral-900 p-3 shadow-md flex justify-between items-center z-30 border-b border-slate-800 shrink-0">
+            <div className="bg-neutral-900 p-3 shadow-md flex justify-between items-center z-30 border-b border-slate-800 shrink-0 relative">
                 <div className="flex items-center gap-4">
                     <button
                         onClick={shuffleBoard}

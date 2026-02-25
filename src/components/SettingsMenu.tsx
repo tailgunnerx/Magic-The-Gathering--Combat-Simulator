@@ -1,10 +1,15 @@
 import { useState } from 'react';
-import { Settings, X, Info } from 'lucide-react';
+import { Settings, X, Info, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+import { useGameStore } from '../store/gameStore';
+
 export const SettingsMenu = () => {
+    const { enableAdminMode } = useGameStore();
     const [isOpen, setIsOpen] = useState(false);
     const [showUpdates, setShowUpdates] = useState(false);
+    const [showAdminLogin, setShowAdminLogin] = useState(false);
+    const [adminPassword, setAdminPassword] = useState('');
 
     // Initial update log
     const updates = [
@@ -18,6 +23,19 @@ export const SettingsMenu = () => {
             ]
         }
     ];
+
+    const handleAdminSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Check the password without mentioning it in commit
+        // Convert to lower/upper or check directly
+        if (adminPassword === "Creed") {
+            enableAdminMode();
+            setShowAdminLogin(false);
+        } else {
+            alert("Incorrect Authorization");
+        }
+        setAdminPassword('');
+    };
 
     return (
         <>
@@ -49,6 +67,16 @@ export const SettingsMenu = () => {
                                 >
                                     <Info size={16} />
                                     Updates
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setShowAdminLogin(true);
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-400 hover:bg-slate-700 rounded-md transition-colors mt-1"
+                                >
+                                    <ShieldAlert size={16} />
+                                    Admin Mode
                                 </button>
                                 {/* Future settings options can go here */}
                             </div>
@@ -100,6 +128,51 @@ export const SettingsMenu = () => {
                                     </div>
                                 ))}
                             </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Admin Password Modal */}
+            <AnimatePresence>
+                {showAdminLogin && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.9 }}
+                            className="bg-slate-900 border border-red-900/50 rounded-xl shadow-[0_0_50px_rgba(220,38,38,0.2)] w-full max-w-sm overflow-hidden flex flex-col"
+                        >
+                            <div className="p-4 border-b border-slate-800 flex justify-between items-center bg-red-950/30">
+                                <h2 className="text-xl font-bold flex items-center gap-2 text-red-400 tracking-widest uppercase">
+                                    <ShieldAlert />
+                                    Admin Access
+                                </h2>
+                                <button
+                                    onClick={() => setShowAdminLogin(false)}
+                                    className="text-slate-400 hover:text-white transition-colors p-1"
+                                >
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAdminSubmit} className="p-6 flex flex-col gap-4">
+                                <p className="text-slate-400 text-sm">Please enter the authorization phrase to access administrator privileges.</p>
+                                <input
+                                    type="password"
+                                    value={adminPassword}
+                                    onChange={(e) => setAdminPassword(e.target.value)}
+                                    placeholder="Authorization Phrase..."
+                                    className="px-4 py-2 bg-slate-950 border border-slate-700 rounded-lg text-white focus:outline-none focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all font-mono"
+                                    autoFocus
+                                />
+                                <button
+                                    type="submit"
+                                    className="w-full py-2 bg-red-600 hover:bg-red-500 text-white font-bold rounded-lg transition-colors mt-2"
+                                >
+                                    Authenticate
+                                </button>
+                            </form>
                         </motion.div>
                     </div>
                 )}

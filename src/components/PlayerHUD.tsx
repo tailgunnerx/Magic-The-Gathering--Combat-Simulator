@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import type { Player } from '../types';
-import { Heart, Skull, Shield, Coins, ChevronDown, ChevronUp } from 'lucide-react';
+import { Heart, Skull, Shield, Coins, ChevronDown, ChevronUp, Infinity as InfinityIcon } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useGameStore } from '../store/gameStore';
 
 interface PlayerHUDProps {
     player: Player;
@@ -9,7 +10,10 @@ interface PlayerHUDProps {
 }
 
 export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
+    const { isAdminMode } = useGameStore();
     const [isCollapsed, setIsCollapsed] = useState(false);
+
+    const isPlayer1Admin = isAdminMode && player.id === 'player1';
 
     const getColorInfo = (c: string) => {
         switch (c) {
@@ -56,7 +60,9 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                     </div>
                     <div className="flex items-center gap-1 text-yellow-400">
                         <Coins size={14} fill="currentColor" />
-                        <span className="text-lg font-black">{player.gold}</span>
+                        <span className="text-lg font-black flex items-center gap-1">
+                            {isPlayer1Admin ? <InfinityIcon size={16} /> : player.gold}
+                        </span>
                     </div>
                     <ChevronUp size={14} className="text-slate-500 ml-1" />
                 </div>
@@ -112,7 +118,9 @@ export const PlayerHUD = ({ player, isActive }: PlayerHUDProps) => {
                         className="flex items-center gap-2.5 text-yellow-400 bg-yellow-400/10 px-3 py-1.5 rounded-xl border border-yellow-400/20 shadow-lg"
                     >
                         <Coins size={20} fill="currentColor" className="drop-shadow-[0_0_5px_rgba(234,179,8,0.5)]" />
-                        <span className="text-2xl font-black tracking-tighter">{player.gold}</span>
+                        <span className="text-2xl font-black tracking-tighter flex items-center">
+                            {isPlayer1Admin ? <InfinityIcon size={24} /> : player.gold}
+                        </span>
                     </motion.div>
                 </div>
 

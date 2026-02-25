@@ -92,6 +92,8 @@ interface GameStore extends GameState {
     calculateCombatOutcome: () => CombatOutcome;
     closeSummary: () => void;
     closeStartPrompt: () => void;
+    enableAdminMode: () => void;
+    isAdminMode: boolean;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -124,7 +126,9 @@ export const useGameStore = create<GameStore>((set, get) => ({
     showShop: false,
     gambleCount: 0,
     penaltyNotice: null,
+    isAdminMode: false,
 
+    enableAdminMode: () => set({ isAdminMode: true }),
     closeStartPrompt: () => set({ showStartPrompt: false }),
 
     startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => {
