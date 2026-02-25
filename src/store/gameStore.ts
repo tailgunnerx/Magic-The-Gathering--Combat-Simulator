@@ -1526,6 +1526,10 @@ export const useGameStore = create<GameStore>((set, get) => ({
             let updatedPlayers = [...state.players];
 
             if (upgrade === 'spawn_creature') {
+                if (player.battlefield.length >= 6) {
+                    addLog("⚠️ Battlefield is full! Maximum 6 creatures allowed.");
+                    return state;
+                }
                 // Spawn a random creature for player1 that matches color identity
                 const legalPool = CARD_POOL.filter(card => {
                     if (card.colors.length === 0) return true; // Colorless
@@ -1595,6 +1599,12 @@ export const useGameStore = create<GameStore>((set, get) => ({
                 );
                 addLog(`💖 You gained 4 life!`);
             } else if (upgrade === 'gamble_spawn') {
+                const opponentInfo = state.players.find(p => p.id === 'player2');
+                if (opponentInfo && opponentInfo.battlefield.length >= 6) {
+                    addLog("⚠️ Opponent battlefield is full! Gamble unavailable to prevent overflow.");
+                    return state;
+                }
+
                 if (state.gambleCount >= 3) {
                     addLog("⚠️ High Risk Gamble can only be used 3 times per game!");
                     return state;
@@ -1719,7 +1729,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
         ];
 
         // Filter affordable items
-        const affordable = shopItems.filter(item => item.cost <= aiPlayer.gold);
+        const affordable = shopItems.filter(item => {
+            if (item.cost > aiPlayer.gold) return false;
+            if (item.id === 'spawn_creature' && aiPlayer.battlefield.length >= 6) return false;
+            return true;
+        });
         if (affordable.length === 0) return;
 
         // AI strategy: Prefer higher priority items, but add some randomness

@@ -75,29 +75,11 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
     };
 
     return (
-        // Restricting width to max-w-[800px] to be slightly wider than the timeline (500px), 
-        // with custom transparent border margins to achieve "just a little bit bigger" look.
-        <div
-            className={`flex gap-6 min-h-[320px] px-8 w-full max-w-[800px] mx-auto overflow-x-auto overflow-y-hidden 
-            ${player.id === 'player1' ? 'items-start pt-2 pb-24' : 'items-center py-4'}
-            [&::-webkit-scrollbar]:h-4
-            [&::-webkit-scrollbar-track]:bg-gradient-to-r 
-            [&::-webkit-scrollbar-track]:from-slate-950/80 
-            [&::-webkit-scrollbar-track]:via-slate-800/80 
-            [&::-webkit-scrollbar-track]:to-slate-950/80 
-            [&::-webkit-scrollbar-track]:rounded-full 
-            [&::-webkit-scrollbar-thumb]:bg-amber-600/90 
-            hover:[&::-webkit-scrollbar-thumb]:bg-amber-500 
-            [&::-webkit-scrollbar-thumb]:rounded-full
-            `}
-            style={{
-                // Prevents the "clipped left" bug of flexbox when items overflow a centered container
-                justifyContent: player.battlefield.length >= 6 ? 'flex-start' : 'center'
-            }}
-        >
+        // Changed to simple flex row, no wrapping, focused on "line" layout
+        <div className="flex gap-6 items-center justify-center min-h-[300px] px-8 w-full max-w-7xl mx-auto">
             <AnimatePresence>
                 {player.battlefield.length === 0 ? (
-                    <div className="text-slate-600 font-mono text-sm border-2 border-dashed border-slate-800 rounded-lg p-6 opacity-50 mt-10">
+                    <div className="text-slate-600 font-mono text-sm border-2 border-dashed border-slate-800 rounded-lg p-6 opacity-50">
                         Empty Battlefield
                     </div>
                 ) : (
@@ -135,7 +117,7 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
                         if (isSelected) extraClass = "ring-4 ring-yellow-400 ring-offset-2 ring-offset-slate-900";
 
                         return (
-                            <div key={card.id} className="relative shrink-0">
+                            <div key={card.id} className="relative">
                                 <Card
                                     card={card}
                                     onClick={() => handleCardClick(card.id)}
