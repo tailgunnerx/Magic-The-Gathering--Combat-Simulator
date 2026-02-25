@@ -13,8 +13,8 @@ import { MechanicsGuide } from './MechanicsGuide';
 import { CombatTimeline } from './CombatTimeline';
 import { SkipCombatModal } from './SkipCombatModal';
 import { PenaltyNotification } from './PenaltyNotification';
-import { Shuffle, GraduationCap, Shield } from 'lucide-react';
-import { useModeStore } from '../store/modeStore';
+import { SettingsMenu } from './SettingsMenu';
+import { Shuffle, GraduationCap } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export const GameInterface = () => {
@@ -60,12 +60,6 @@ export const GameInterface = () => {
                         {quizMode ? "Quiz Mode: ON" : "Quiz Mode: OFF"}
                     </button>
 
-                    <button
-                        onClick={() => useModeStore.getState().setMode('banding')}
-                        className="bg-amber-600 hover:bg-amber-500 active:scale-95 text-white px-4 py-2 rounded-lg font-bold flex items-center gap-2 transition-all shadow-md border border-amber-400/50"
-                    >
-                        <Shield size={18} /> Banding Mode
-                    </button>
                     <div className="flex flex-col">
                         <span className="text-[10px] text-slate-500 font-bold uppercase">Active Player</span>
                         <span className={`font-bold ${activePlayerId === player1.id ? "text-green-400" : "text-red-400"}`}>
@@ -87,6 +81,9 @@ export const GameInterface = () => {
                             )}
                         </div>
                     </div>
+
+                    <div className="h-8 w-px bg-slate-700 mx-2"></div>
+                    <SettingsMenu />
                 </div>
             </div >
 

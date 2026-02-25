@@ -38,7 +38,7 @@ export const Card = ({ card, onClick, className, isAttacking, isBlocking, isLock
     return (
         <motion.div
             className={clsx(
-                "relative w-56 h-80 rounded-[18px] cursor-pointer overflow-hidden select-none transition-all duration-300",
+                "relative w-56 h-80 rounded-[18px] cursor-pointer overflow-hidden select-none border-2 border-slate-800 hover:border-slate-600",
                 isAttacking ? "ring-4 ring-red-500 shadow-[0_0_30px_rgba(239,68,68,0.6)]" :
                     isBlocking ? "ring-4 ring-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.6)]" :
                         "hover:shadow-2xl",

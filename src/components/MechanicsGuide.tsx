@@ -103,9 +103,6 @@ export const MechanicsGuide = () => {
             >
                 <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Book className="w-10 h-10 text-indigo-100 drop-shadow-lg" />
-
-                {/* Decorative Elements */}
-                <div className="absolute bottom-1 right-2 text-[10px] font-black text-indigo-300 pointer-events-none">百科</div>
             </motion.button>
 
             {/* The Expanded List */}

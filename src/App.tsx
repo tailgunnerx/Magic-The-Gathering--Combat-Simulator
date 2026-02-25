@@ -1,16 +1,8 @@
 import { GameInterface } from './components/GameInterface';
-import { BandingInterface } from './banding/BandingInterface';
-import { useModeStore } from './store/modeStore';
 
 function App() {
-  const { mode } = useModeStore();
-
-  return (
-    <>
-      {mode === 'normal' ? <GameInterface /> : <BandingInterface />}
-    </>
-  )
+  return <GameInterface />;
 }
 
-export default App
+export default App;
 

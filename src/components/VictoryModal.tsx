@@ -86,8 +86,8 @@ export const VictoryModal = () => {
                             </div>
                             <div className="bg-white/5 rounded-xl p-4 border border-white/10">
                                 <span className="text-xs text-slate-500 font-bold uppercase block mb-1">Combat Result</span>
-                                <span className="text-white font-bold text-xl">
-                                    {isPlayerWin ? <PartyPopper className="inline mr-2" size={20} /> : null}
+                                <span className="text-white font-bold text-lg flex items-center justify-center">
+                                    {isPlayerWin ? <PartyPopper className="inline mr-2" size={18} /> : null}
                                     CONCLUDED
                                 </span>
                             </div>
