@@ -1,12 +1,12 @@
 import { useGameStore } from '../store/gameStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Swords, User, Bot, Dices } from 'lucide-react';
+import { Swords, User, Bot, Dices, X } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 type RollStage = 'init' | 'npcRolling' | 'userTurn' | 'userRolling' | 'result';
 
 export const StartBattleModal = () => {
-    const { showStartPrompt, startGame } = useGameStore();
+    const { showStartPrompt, startGame, closeStartPrompt } = useGameStore();
     const [rollStage, setRollStage] = useState<RollStage>('init');
     const [npcRoll, setNpcRoll] = useState(0);
     const [userRoll, setUserRoll] = useState(0);
@@ -68,7 +68,13 @@ export const StartBattleModal = () => {
                         className="bg-slate-900 border border-slate-700 rounded-3xl shadow-[0_0_50px_rgba(30,41,59,0.5)] w-full max-w-lg overflow-hidden flex flex-col"
                     >
                         {/* Header */}
-                        <div className="p-8 border-b border-white/5 bg-gradient-to-b from-slate-950 to-slate-900 text-center">
+                        <div className="relative p-8 border-b border-white/5 bg-gradient-to-b from-slate-950 to-slate-900 text-center">
+                            <button
+                                onClick={closeStartPrompt}
+                                className="absolute top-4 right-4 text-slate-500 hover:text-white bg-slate-800/50 hover:bg-red-500/20 p-2 rounded-full transition-colors"
+                            >
+                                <X size={20} />
+                            </button>
                             <div className="inline-flex p-3 bg-emerald-500/20 rounded-2xl mb-4 border border-emerald-500/30">
                                 <Swords className="text-emerald-400 w-8 h-8" />
                             </div>

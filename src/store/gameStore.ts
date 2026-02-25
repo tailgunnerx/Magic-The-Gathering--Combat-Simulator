@@ -91,6 +91,7 @@ interface GameStore extends GameState {
     };
     calculateCombatOutcome: () => CombatOutcome;
     closeSummary: () => void;
+    closeStartPrompt: () => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => ({
@@ -123,6 +124,8 @@ export const useGameStore = create<GameStore>((set, get) => ({
     showShop: false,
     gambleCount: 0,
     penaltyNotice: null,
+
+    closeStartPrompt: () => set({ showStartPrompt: false }),
 
     startGame: (startingPlayerId: 'player1' | 'player2' | 'random') => {
         const { addLog, players } = get();
