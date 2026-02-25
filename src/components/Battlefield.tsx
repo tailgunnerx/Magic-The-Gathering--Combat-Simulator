@@ -75,39 +75,29 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
     };
 
     return (
-        // Added smooth horizontal scrolling logic when there are 6+ cards
+        // Restricting width to max-w-[800px] to be slightly wider than the timeline (500px), 
+        // with custom transparent border margins to achieve "just a little bit bigger" look.
         <div
-            className={`flex gap-6 items-center min-h-[320px] px-8 w-full max-w-[95vw] mx-auto overflow-x-auto overflow-y-hidden py-4 
-            [&::-webkit-scrollbar]:h-5
+            className={`flex gap-6 min-h-[320px] px-8 w-full max-w-[800px] mx-auto overflow-x-auto overflow-y-hidden 
+            ${player.id === 'player1' ? 'items-start pt-2 pb-24' : 'items-center py-4'}
+            [&::-webkit-scrollbar]:h-4
             [&::-webkit-scrollbar-track]:bg-gradient-to-r 
-            [&::-webkit-scrollbar-track]:from-slate-950 
-            [&::-webkit-scrollbar-track]:via-slate-800 
-            [&::-webkit-scrollbar-track]:to-slate-950 
-            [&::-webkit-scrollbar-track]:border-y-[6px] 
-            [&::-webkit-scrollbar-track]:border-transparent 
-            [&::-webkit-scrollbar-track]:bg-clip-padding 
+            [&::-webkit-scrollbar-track]:from-slate-950/80 
+            [&::-webkit-scrollbar-track]:via-slate-800/80 
+            [&::-webkit-scrollbar-track]:to-slate-950/80 
             [&::-webkit-scrollbar-track]:rounded-full 
-            [&::-webkit-scrollbar-thumb]:bg-amber-600 
+            [&::-webkit-scrollbar-thumb]:bg-amber-600/90 
             hover:[&::-webkit-scrollbar-thumb]:bg-amber-500 
-            [&::-webkit-scrollbar-thumb]:border-y-[4px] 
-            [&::-webkit-scrollbar-thumb]:border-x-[12px] 
-            [&::-webkit-scrollbar-thumb]:border-solid 
-            [&::-webkit-scrollbar-thumb]:border-slate-900 
-            [&::-webkit-scrollbar-thumb]:bg-clip-padding 
             [&::-webkit-scrollbar-thumb]:rounded-full
             `}
             style={{
                 // Prevents the "clipped left" bug of flexbox when items overflow a centered container
-                justifyContent: player.battlefield.length >= 6 ? 'flex-start' : 'center',
-                transform: player.id === 'player1' ? 'rotateX(180deg)' : 'none'
+                justifyContent: player.battlefield.length >= 6 ? 'flex-start' : 'center'
             }}
         >
             <AnimatePresence>
                 {player.battlefield.length === 0 ? (
-                    <div
-                        className="text-slate-600 font-mono text-sm border-2 border-dashed border-slate-800 rounded-lg p-6 opacity-50"
-                        style={{ transform: player.id === 'player1' ? 'rotateX(180deg)' : 'none' }}
-                    >
+                    <div className="text-slate-600 font-mono text-sm border-2 border-dashed border-slate-800 rounded-lg p-6 opacity-50 mt-10">
                         Empty Battlefield
                     </div>
                 ) : (
@@ -145,11 +135,7 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
                         if (isSelected) extraClass = "ring-4 ring-yellow-400 ring-offset-2 ring-offset-slate-900";
 
                         return (
-                            <div
-                                key={card.id}
-                                className="relative"
-                                style={{ transform: player.id === 'player1' ? 'rotateX(180deg)' : 'none' }}
-                            >
+                            <div key={card.id} className="relative shrink-0">
                                 <Card
                                     card={card}
                                     onClick={() => handleCardClick(card.id)}
