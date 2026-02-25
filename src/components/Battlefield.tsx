@@ -78,21 +78,36 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
         // Added smooth horizontal scrolling logic when there are 6+ cards
         <div
             className={`flex gap-6 items-center min-h-[320px] px-8 w-full max-w-[95vw] mx-auto overflow-x-auto overflow-y-hidden py-4 
-            [&::-webkit-scrollbar]:h-3 
-            [&::-webkit-scrollbar-track]:bg-black/40 
+            [&::-webkit-scrollbar]:h-5
+            [&::-webkit-scrollbar-track]:bg-gradient-to-r 
+            [&::-webkit-scrollbar-track]:from-slate-950 
+            [&::-webkit-scrollbar-track]:via-slate-800 
+            [&::-webkit-scrollbar-track]:to-slate-950 
+            [&::-webkit-scrollbar-track]:border-y-[6px] 
+            [&::-webkit-scrollbar-track]:border-transparent 
+            [&::-webkit-scrollbar-track]:bg-clip-padding 
             [&::-webkit-scrollbar-track]:rounded-full 
-            [&::-webkit-scrollbar-thumb]:bg-slate-500/80 
-            hover:[&::-webkit-scrollbar-thumb]:bg-slate-400 
+            [&::-webkit-scrollbar-thumb]:bg-amber-600 
+            hover:[&::-webkit-scrollbar-thumb]:bg-amber-500 
+            [&::-webkit-scrollbar-thumb]:border-y-[4px] 
+            [&::-webkit-scrollbar-thumb]:border-x-[12px] 
+            [&::-webkit-scrollbar-thumb]:border-solid 
+            [&::-webkit-scrollbar-thumb]:border-slate-900 
+            [&::-webkit-scrollbar-thumb]:bg-clip-padding 
             [&::-webkit-scrollbar-thumb]:rounded-full
             `}
             style={{
                 // Prevents the "clipped left" bug of flexbox when items overflow a centered container
-                justifyContent: player.battlefield.length >= 6 ? 'flex-start' : 'center'
+                justifyContent: player.battlefield.length >= 6 ? 'flex-start' : 'center',
+                transform: player.id === 'player1' ? 'rotateX(180deg)' : 'none'
             }}
         >
             <AnimatePresence>
                 {player.battlefield.length === 0 ? (
-                    <div className="text-slate-600 font-mono text-sm border-2 border-dashed border-slate-800 rounded-lg p-6 opacity-50">
+                    <div
+                        className="text-slate-600 font-mono text-sm border-2 border-dashed border-slate-800 rounded-lg p-6 opacity-50"
+                        style={{ transform: player.id === 'player1' ? 'rotateX(180deg)' : 'none' }}
+                    >
                         Empty Battlefield
                     </div>
                 ) : (
@@ -130,7 +145,11 @@ export const Battlefield = ({ player }: BattlefieldProps) => {
                         if (isSelected) extraClass = "ring-4 ring-yellow-400 ring-offset-2 ring-offset-slate-900";
 
                         return (
-                            <div key={card.id} className="relative">
+                            <div
+                                key={card.id}
+                                className="relative"
+                                style={{ transform: player.id === 'player1' ? 'rotateX(180deg)' : 'none' }}
+                            >
                                 <Card
                                     card={card}
                                     onClick={() => handleCardClick(card.id)}
