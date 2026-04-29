@@ -1,3 +1,6 @@
+Play it live now!
+mtgcombat.web.app
+
 # ⚔️ Magic: The Gathering Combat Simulator
 
 An interactive combat simulator for Magic: The Gathering built with React, TypeScript, and Vite. Master MTG combat mechanics through hands-on practice with quiz-based gameplay and a rewarding gold economy system.
