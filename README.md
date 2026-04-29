@@ -1,5 +1,6 @@
 Play it live now!
-mtgcombat.web.app
+[mtgcombat.web.app
+](https://mtgcombat.web.app/)
 
 # ⚔️ Magic: The Gathering Combat Simulator
 
